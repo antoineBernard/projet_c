@@ -96,6 +96,7 @@ char verifCaseChoisie(char charColonne,
                    int intColonne);
 void deplacementPion();
 void verifDeplacementArrivee();
+void deplacementCavalier();
 // ---------------------------------------- Déclaration des types en global ------------------
   struct infoCase                              
               {
@@ -103,7 +104,7 @@ void verifDeplacementArrivee();
                 int ligne;
                 int colonne;
               };
-
+//||
 
 // ---------------------------------------- Déclaration des variables globales ------------------
     //!rappel! les tableaux en C : j'indique le nombre de case
@@ -227,7 +228,7 @@ void deplacementpiece()
       ECHEC = 0;
 
       bidon = getchar();
-      printf("quelle piece voulez-vous déplacer ? ( ex: B3) : ");  
+      printf("quelle piece voulez-vous déplacer ? ( ex: B2) : ");  
       
       scanf("%c%d", &caseDepart.charColonne, &caseDepart.ligne);
       caseDepart.charColonne = toupper(caseDepart.charColonne);
@@ -247,17 +248,19 @@ void deplacementpiece()
   
   printf("caseDepart.colonne = %d   pieceTrouve = %c  caseDepart.ligne = %d \n", caseDepart.colonne, pieceTrouve ,caseDepart.ligne);
  
-  if(pieceTrouve = 'p')
+  if(pieceTrouve == 'p' || pieceTrouve == 'P')
     {
         deplacementPion();
     }
-  else if(pieceTrouve = 't')
+  else if(pieceTrouve == 't' || pieceTrouve == 'T')
     {printf("coucou");}//deplacementTour
-  else if(pieceTrouve = 'c')
-    {printf("coucou");}//deplacementCavalier
-  else if(pieceTrouve = 'f')
+  else if(pieceTrouve == 'c' || pieceTrouve == 'C')
+    {
+        deplacementCavalier();
+    }
+  else if(pieceTrouve == 'f' || pieceTrouve == 'F')
     {printf("coucou");}//deplacementFou
-  else if(pieceTrouve = 'q')
+  else if(pieceTrouve == 'q' || pieceTrouve == 'Q')
     {printf("coucou");}//deplacementReine
   else
     {printf("coucou");}//deplacementRoi
@@ -321,7 +324,7 @@ char verifCaseChoisie(char charColonne,
     caseDepart.colonne = intColonne;
 }
 
-//------------------------------------------------- procédure déplement pion ------------------------------------------------ // module terminé
+//------------------------------------------------- procédure déplacement pion ------------------------------------------------ // module terminé
 void deplacementPion()
 {
     printf("------------------ Je suis dans la méthode déplacementPion\n");
@@ -331,7 +334,7 @@ void deplacementPion()
     {
         ECHEC == 0 ;
         verifDeplacementArrivee();
-        
+
         if(joueurActif == 1)// si joueur blanc
         {
             printf("caseArrivee ligne : %d  colonne : %d    caseDepart.ligne : %d  colonne %d\n", caseArrivee.ligne, caseArrivee.colonne, caseDepart.ligne, caseDepart.colonne);
@@ -344,7 +347,13 @@ void deplacementPion()
             {
                 ECHEC = 0;
             }
-            else if (  (caseArrivee.ligne == caseDepart.ligne-1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ' )
+            else if (  (caseArrivee.ligne == caseDepart.ligne-1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && (t[caseArrivee.ligne][caseArrivee.colonne] != ' ' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'P' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'T' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'C' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'F' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'Q' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'K') )
             {
                 printf("------- Vous avez éliminé une piece adverse ! --------");
                 ECHEC = 0;
@@ -370,7 +379,13 @@ void deplacementPion()
             {
                 ECHEC = 0;
             }
-            else if (  (caseArrivee.ligne == caseDepart.ligne+1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ' )
+            else if (  (caseArrivee.ligne == caseDepart.ligne+1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && (t[caseArrivee.ligne][caseArrivee.colonne] != ' ' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'p' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 't' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'c' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'f' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'q' &&
+                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'k') )
             {
                 printf("------- Vous avez éliminé une piece adverse ! --------");
                 ECHEC = 0;
@@ -431,22 +446,99 @@ void verifDeplacementArrivee()
     }
   }
 }
+
+//------------------------------------------------- procédure déplacement Cavalier ------------------------------------------------ 
+void deplacementCavalier(){
+    printf("------------------ Je suis dans la méthode déplacementCavalier\n");
+    ECHEC = 1; //c'est une variable globale
+
+    
+    while(ECHEC == 1)
+    {
+        
+        ECHEC = 0 ;
+        verifDeplacementArrivee(); 
+        printf("je suis sortir de verifDeplacementArrivee\n");
+
+        if((caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne-1) ||
+           (caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne+1) ||
+           (caseArrivee.ligne == caseDepart.ligne-1 && caseArrivee.colonne == caseDepart.colonne-2) ||
+           (caseArrivee.ligne == caseDepart.ligne-1 && caseArrivee.colonne == caseDepart.colonne+2) ||
+           (caseArrivee.ligne == caseDepart.ligne+2 && caseArrivee.colonne == caseDepart.colonne-1) ||
+           (caseArrivee.ligne == caseDepart.ligne+2 && caseArrivee.colonne == caseDepart.colonne+1) ||               
+           (caseArrivee.ligne == caseDepart.ligne+1 && caseArrivee.colonne == caseDepart.colonne-2) ||
+           (caseArrivee.ligne == caseDepart.ligne+1 && caseArrivee.colonne == caseDepart.colonne+2))
+        {
+            printf("mouvement licite\n");
+            if(joueurActif == 1)
+            {
+                if(t[caseArrivee.ligne][caseArrivee.colonne] == ' ')
+                {
+                    ECHEC = 0;
+                }
+                else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'p' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 't' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'c' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'f' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'q' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'k')
+                {
+                     printf("------- Vous avez éliminé une piece adverse ! --------"); 
+                     ECHEC = 0;
+                }
+                else
+                {
+                    ECHEC = 1;
+                }
+            }
+            else if(joueurActif == 2)
+            {
+                if(t[caseArrivee.ligne][caseArrivee.colonne] == ' ')
+                {
+                    ECHEC = 0;
+                }
+                else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'P' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'T' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'C' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'F' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'Q' ||
+                        t[caseArrivee.ligne][caseArrivee.colonne] == 'K')
+                {
+                    printf("------- Vous avez éliminé une piece adverse ! --------"); 
+                    ECHEC = 0;
+                }
+                else
+                {
+                    ECHEC = 1;
+                }
+            }  
+        }
+        else
+        {
+            printf("Mouvement non valide, souvenez-vous, le cavalier se déplace en 'L'");
+            ECHEC = 1;
+        }
+   }
+   
+   if(ECHEC == 0)
+   {
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne]; //je deplace la piece
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
+   }
+}
 /*
 
 
 //------------------------------------------------- Test de la diagonale haut/gauche ------------------------------------------------ // GO CHAMPIONNE !!
-void testDiagonalHG(int intColonne,
-                    int ligne,
-                    int caseArrivee) // Variable à définir 
+void testDiagonalHG()
 {
     int i, j, Nope;
     
     
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne)
         {
-
             Nope = 1;
         }
     }
