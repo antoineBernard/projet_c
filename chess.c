@@ -85,13 +85,13 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#define NONTROUVE -1 //en C, -1 est utilisé dans les booléens
+#define NONTROUVE -1 
 // ---------------------------------------- Déclaration des fonctions ------------------
 
 void retoursLigne(int nbLignes);
 void affichage();
 void deplacementpiece();
-char verifCaseChoisi(char charColonne, 
+char verifCaseChoisie(char charColonne, 
                    int ligne,
                    int intColonne);
 void deplacementPion();
@@ -232,7 +232,7 @@ void deplacementpiece()
       scanf("%c%d", &caseDepart.charColonne, &caseDepart.ligne);
       caseDepart.charColonne = toupper(caseDepart.charColonne);
       
-      verifCaseChoisi(caseDepart.charColonne , caseDepart.ligne , caseDepart.colonne);
+      verifCaseChoisie(caseDepart.charColonne , caseDepart.ligne , caseDepart.colonne);
       caseDepart.ligne--;
       pieceTrouve = t[caseDepart.ligne][caseDepart.colonne] ;
 
@@ -249,7 +249,6 @@ void deplacementpiece()
  
   if(pieceTrouve = 'p')
     {
-        
         deplacementPion();
     }
   else if(pieceTrouve = 't')
@@ -264,8 +263,8 @@ void deplacementpiece()
     {printf("coucou");}//deplacementRoi
 }
 
-// --------------------------------------------- Fonction verifCaseChoisi ------------------------------------------------//
-char verifCaseChoisi(char charColonne,
+// --------------------------------------------- Fonction verifCaseChoisie ------------------------------------------------//
+char verifCaseChoisie(char charColonne,
                    int ligne,
                    int intColonne)
 {
@@ -322,7 +321,7 @@ char verifCaseChoisi(char charColonne,
     caseDepart.colonne = intColonne;
 }
 
-//------------------------------------------------- procédure déplement pion ------------------------------------------------ // GO CHAMPIONNE !!
+//------------------------------------------------- procédure déplement pion ------------------------------------------------ // module terminé
 void deplacementPion()
 {
     printf("------------------ Je suis dans la méthode déplacementPion\n");
@@ -336,9 +335,22 @@ void deplacementPion()
         if(joueurActif == 1)// si joueur blanc
         {
             printf("caseArrivee ligne : %d  colonne : %d    caseDepart.ligne : %d  colonne %d\n", caseArrivee.ligne, caseArrivee.colonne, caseDepart.ligne, caseDepart.colonne);
-            if((caseArrivee.ligne != caseDepart.ligne-1) || (caseArrivee.colonne != caseDepart.colonne))
+            if(( ((caseArrivee.ligne == caseDepart.ligne-1) || (caseArrivee.ligne == caseDepart.ligne-2)) && (caseArrivee.colonne == caseDepart.colonne)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ')
             {
-              
+                printf("Vous ne pouvez pas avancer car une piece bloque le passage... Veuillez recommencer !\n");
+                ECHEC = 1;
+            }
+            else if((caseArrivee.ligne == caseDepart.ligne-2) && (caseArrivee.colonne == caseDepart.colonne) && (caseDepart.ligne == 6)) //pour avancer de deux case
+            {
+                ECHEC = 0;
+            }
+            else if (  (caseArrivee.ligne == caseDepart.ligne-1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ' )
+            {
+                printf("------- Vous avez éliminé une piece adverse ! --------");
+                ECHEC = 0;
+            }
+            else if((caseArrivee.ligne != caseDepart.ligne-1) || (caseArrivee.colonne != caseDepart.colonne))
+            {
                 printf("Mouvement non valide : un pion ne peut se déplacer que d'une case vers l'avant... Veuillez recommencer !\n");
                 ECHEC = 1;
             }
@@ -349,7 +361,21 @@ void deplacementPion()
         }
         else if(joueurActif == 2) //si joueur noir
         {
-            if((caseArrivee.ligne != caseDepart.ligne+1) || (caseArrivee.colonne != caseDepart.colonne))
+            if(( ((caseArrivee.ligne == caseDepart.ligne+1) || (caseArrivee.ligne == caseDepart.ligne+2)) && (caseArrivee.colonne == caseDepart.colonne)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ')
+            {
+                printf("Vous ne pouvez pas avancer car une piece bloque le passage... Veuillez recommencer !\n");
+                ECHEC = 1;
+            }
+            else if((caseArrivee.ligne == caseDepart.ligne+2) && (caseArrivee.colonne == caseDepart.colonne) && (caseDepart.ligne == 1)) //pour avancer de deux case
+            {
+                ECHEC = 0;
+            }
+            else if (  (caseArrivee.ligne == caseDepart.ligne+1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ' )
+            {
+                printf("------- Vous avez éliminé une piece adverse ! --------");
+                ECHEC = 0;
+            }
+            else if((caseArrivee.ligne != caseDepart.ligne+1) || (caseArrivee.colonne != caseDepart.colonne))
             {
                 printf("Mouvement non valide : un pion ne peut se déplacer que d'une case vers l'avant... Veuillez recommencer !\n");
                 ECHEC = 1;
@@ -397,14 +423,14 @@ void verifDeplacementArrivee()
       }
     }
     //-------pour vérifier si la colonne et la ligne existe ----
-    if((caseArrivee.colonne < 0) || (caseArrivee.colonne > 7) || (caseArrivee.ligne < 1) || (caseArrivee.ligne > 8))
+    if((caseArrivee.colonne < 0) || (caseArrivee.colonne > 7) || (caseArrivee.ligne < 0) || (caseArrivee.ligne > 7))
     {
+        printf("CaseArrivé.ligne = %d    caseArrivee.colonne = %d", caseArrivee.ligne, caseArrivee.colonne);
         printf("Mauvaise saisie ! A1 est la première case, H8 est la dernière, Veuillez recommencer \n");
         ECHEC = 1 ;
     }
   }
 }
-
 /*
 
 
