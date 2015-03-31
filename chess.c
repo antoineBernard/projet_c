@@ -80,6 +80,13 @@ verifEchecRoidujoueurAdverse(CouleurDuRoi);    ---> une piece met en danger le r
 verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
   verifDeplacementRoi()
     verifEchecRoiDujoueurQuiJoue()
+    
+    
+  --TODO-- : 
+    - Dans VerifDeplacementArrivée -> intégrer le cas ou il 'vise' un pion à lui
+    - 
+    
+    
 */
 
 #include <stdio.h>
@@ -90,13 +97,14 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
 
 void retoursLigne(int nbLignes);
 void affichage();
-void deplacementpiece();
+void deplacementPiece();
 char verifCaseChoisie(char charColonne, 
                    int ligne,
                    int intColonne);
 void deplacementPion();
 void verifDeplacementArrivee();
 void deplacementCavalier();
+void deplacementRoi();
 // ---------------------------------------- Déclaration des types en global ------------------
   struct infoCase                              
               {
@@ -126,8 +134,9 @@ char nomVainqueur[20];
 char piecesBlanches[10] = "PTCFQK";  //pour qu'on vérifie si c'est une piece blanche
 char piecesNoires[10] = "ptcfqk";  //pour qu'on vérifie si c'est une piece noire
 int joueurActif;           //utilse pour savoir avec qui on joue actuellement. 1 = blanc, 2 = noir
-char joueurBlanc[20] = "Joueur1";
-char joueurNoir[20] = "Joueur2";
+char joueurBlanc[20] = "Joueur1";  // A déclarer dans le main?
+char joueurNoir[20] = "Joueur2"; 
+char piecesDuJoueurActif[10];
 int ECHEC;
 struct infoCase caseDepart; 
 struct infoCase caseArrivee;
@@ -172,11 +181,11 @@ printf("________________________________________________________________________
           affichage();
           printf("-------au joueur BLANC de jouer : (P,T,C,F,Q,K)-------\n");
           joueurActif = 1;
-          deplacementpiece();
+          deplacementPiece();
           affichage();
           printf("-------au joueur NOIR de jouer : (p,t,c,f,q,k)-------\n");
           joueurActif = 2;
-          deplacementpiece();
+          deplacementPiece();
           //partietermine = 1; //je fake la fin de la partie pour les tests logiciels
         }
         //printf("la partie est terminé, le vainqueur est : ", nomVainqueur)
@@ -214,7 +223,7 @@ void affichage()
 }
 
 // --------------------------------------------- Fonction déplacement de piece--------------------
-void deplacementpiece()
+void deplacementPiece()
 {
   char alphabet[10]= "ABCDEFGH";  
   int j = 0;
@@ -263,7 +272,9 @@ void deplacementpiece()
   else if(pieceTrouve == 'q' || pieceTrouve == 'Q')
     {printf("coucou");}//deplacementReine
   else
-    {printf("coucou");}//deplacementRoi
+    {
+        deplacementRoi();
+    }
 }
 
 // --------------------------------------------- Fonction verifCaseChoisie ------------------------------------------------//
@@ -272,7 +283,6 @@ char verifCaseChoisie(char charColonne,
                    int intColonne)
 {
     char alphabet[10]= "ABCDEFGH";  //pour trouver l'emplacement dans le tableau dans la fonction rechercheCase().. A=0, B=1...
-    char piecesDuJoueurActif[10];
     char pieceTrouve, bidon;
     int i= 0,j = 0, flagEspace = 0;
 
@@ -334,7 +344,7 @@ void deplacementPion()
     {
         ECHEC == 0 ;
         verifDeplacementArrivee();
-
+        printf("Je suis sorti de verifDeplacementArrivee");
         if(joueurActif == 1)// si joueur blanc
         {
             printf("caseArrivee ligne : %d  colonne : %d    caseDepart.ligne : %d  colonne %d\n", caseArrivee.ligne, caseArrivee.colonne, caseDepart.ligne, caseDepart.colonne);
@@ -415,36 +425,39 @@ void deplacementPion()
 
 void verifDeplacementArrivee()
 {
-  char alphabet[10]= "ABCDEFGH";
-  int i = 0;
-  char bidon;
-  ECHEC =1; //echec est un variable globale
-  while(ECHEC == 1) 
-  {
-    ECHEC = 0;
-    printf("Où voulez-vous la déplacer? (ex : C9) : ");
-    bidon = getchar();
-    scanf("%c%d", &caseArrivee.charColonne, &caseArrivee.ligne);
-    caseArrivee.ligne--; //pour que ça corresponde au tableau
-    caseArrivee.charColonne = toupper(caseArrivee.charColonne);
-    // test + test associé
-    
-    //-------pour trouver l'index de la LETTRE dans l'alphabet ----
-    for(i ; i < strlen(alphabet) ; i++)
+    char alphabet[10]= "ABCDEFGH";
+    int i = 0, choix = 0;
+    char bidon;
+    ECHEC =1; //echec est un variable globale
+
+    while(ECHEC == 1) 
     {
-      if(alphabet[i] == caseArrivee.charColonne)
-      {
+        ECHEC = 0;
+        printf("Où voulez-vous la déplacer? (ex : C9) : ");
+        bidon = getchar();
+        scanf("%c%d", &caseArrivee.charColonne, &caseArrivee.ligne);
+        caseArrivee.ligne--; //pour que ça corresponde au tableau
+        caseArrivee.charColonne = toupper(caseArrivee.charColonne);
+        // test + test associé
+        
+        //-------pour trouver l'index de la LETTRE dans l'alphabet ----
+        for(i ; i < strlen(alphabet) ; i++)
+        {
+        if(alphabet[i] == caseArrivee.charColonne)
+        {
           caseArrivee.colonne = i;
-      }
-    }
-    //-------pour vérifier si la colonne et la ligne existe ----
-    if((caseArrivee.colonne < 0) || (caseArrivee.colonne > 7) || (caseArrivee.ligne < 0) || (caseArrivee.ligne > 7))
-    {
+        }
+        }
+        //-------pour vérifier si la colonne et la ligne existe ----
+        if((caseArrivee.colonne < 0) || (caseArrivee.colonne > 7) || (caseArrivee.ligne < 0) || (caseArrivee.ligne > 7))
+        {
         printf("CaseArrivé.ligne = %d    caseArrivee.colonne = %d", caseArrivee.ligne, caseArrivee.colonne);
         printf("Mauvaise saisie ! A1 est la première case, H8 est la dernière, Veuillez recommencer \n");
         ECHEC = 1 ;
     }
-  }
+    
+}
+  
 }
 
 //------------------------------------------------- procédure déplacement Cavalier ------------------------------------------------ 
@@ -455,10 +468,8 @@ void deplacementCavalier(){
     
     while(ECHEC == 1)
     {
-        
         ECHEC = 0 ;
         verifDeplacementArrivee(); 
-        printf("je suis sortir de verifDeplacementArrivee\n");
 
         if((caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne-1) ||
            (caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne+1) ||
@@ -522,10 +533,26 @@ void deplacementCavalier(){
    
    if(ECHEC == 0)
    {
-        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne]; //je deplace la piece
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];         //je deplace la piece
         t[caseDepart.ligne][caseDepart.colonne] = ' ';
    }
 }
+
+void deplacementRoi()
+{
+    printf("------------------ Je suis dans la méthode déplacementRoi\n");
+    
+    ECHEC == 0 ;
+    while(ECHEC == 1)
+    {
+        ECHEC == 0 ;
+        verifDeplacementArrivee();
+        //
+    }
+}
+
+
+
 /*
 
 
