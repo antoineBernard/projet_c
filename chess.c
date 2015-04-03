@@ -29,21 +29,7 @@ a ajouter a l'affichage ?
      Impossible... votre roi est en echec, vous devez le protéger !
      
      
-     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     MODIFICATIONS EFFECTUEES : 25/02
-     Marion :
-     Ajout de deux modules : testRangeeDroite & testColonneBas (Rangee remplace ligne, terme d'échecs)
-     Codage des modules : testRangeeDroite & testRangee Gauche + testColonneHaut & testColonneBas
-     Test du programme : pas de problème de buffer de mon coté pour la lecture de la pièce à chercher
-     Je laisse ma partie en commentaire tant qu'on aura pas décidé de comment on gère les variables, mais le reste devrait fonctionner.
-     C'est plus qu'une question de syntaxe !
      
-     PS : Quand tu as lu mets 'OK' à coté de "Marion : ", comme ça j'efface et je mets que ce qui a changé
-     
-     Antoine :
-     
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 modules :
 
@@ -88,6 +74,16 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
     
     
 */
+/*
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     MODIFICATIONS EFFECTUEES : 02/04
+     Marion : Modules terminés (diagonales, rangées et colonnes). Je m'occupe du déroulement et de l'appel pour la semaine prochaine !
+     Suggestion : créer un module qui traduit "l'icone" de la pièce (genre 'P') en nom de pièce? (genre Pion)
+     
+     Antoine :
+     
+     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -105,6 +101,7 @@ void deplacementPion();
 void verifDeplacementArrivee();
 void deplacementCavalier();
 void deplacementRoi();
+void changementDePiece();
 // ---------------------------------------- Déclaration des types en global ------------------
   struct infoCase                              
               {
@@ -137,7 +134,7 @@ int joueurActif;           //utilse pour savoir avec qui on joue actuellement. 1
 char joueurBlanc[20] = "Joueur1";  // A déclarer dans le main?
 char joueurNoir[20] = "Joueur2"; 
 char piecesDuJoueurActif[10];
-int ECHEC;
+int ECHEC, changePiece = 0;
 struct infoCase caseDepart; 
 struct infoCase caseArrivee;
 
@@ -179,14 +176,31 @@ printf("________________________________________________________________________
         while(partietermine == 0)
         {
           affichage();
-          printf("-------au joueur BLANC de jouer : (P,T,C,F,Q,K)-------\n");
           joueurActif = 1;
+          printf("-------au joueur BLANC de jouer : (P,T,C,F,Q,K)-------\n");
           deplacementPiece();
+          if(changePiece == 1)
+          {
+             while(changePiece == 1) 
+             {
+                 affichage();
+                 changePiece = 0;
+                 deplacementPiece();
+             }
+          }
           affichage();
-          printf("-------au joueur NOIR de jouer : (p,t,c,f,q,k)-------\n");
           joueurActif = 2;
+          printf("-------au joueur NOIR de jouer : (p,t,c,f,q,k)-------\n");
           deplacementPiece();
-          //partietermine = 1; //je fake la fin de la partie pour les tests logiciels
+          if(changePiece == 1)
+          {
+             while(changePiece == 1) 
+             {
+                 affichage();
+                 changePiece = 0;
+                 deplacementPiece();
+             }
+          }
         }
         //printf("la partie est terminé, le vainqueur est : ", nomVainqueur)
       break;
@@ -345,69 +359,73 @@ void deplacementPion()
         ECHEC == 0 ;
         verifDeplacementArrivee();
         printf("Je suis sorti de verifDeplacementArrivee");
-        if(joueurActif == 1)// si joueur blanc
+        
+        if(changePiece == 0)
         {
-            printf("caseArrivee ligne : %d  colonne : %d    caseDepart.ligne : %d  colonne %d\n", caseArrivee.ligne, caseArrivee.colonne, caseDepart.ligne, caseDepart.colonne);
-            if(( ((caseArrivee.ligne == caseDepart.ligne-1) || (caseArrivee.ligne == caseDepart.ligne-2)) && (caseArrivee.colonne == caseDepart.colonne)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ')
+            if(joueurActif == 1)// si joueur blanc
             {
-                printf("Vous ne pouvez pas avancer car une piece bloque le passage... Veuillez recommencer !\n");
-                ECHEC = 1;
+                printf("caseArrivee ligne : %d  colonne : %d    caseDepart.ligne : %d  colonne %d\n", caseArrivee.ligne, caseArrivee.colonne, caseDepart.ligne, caseDepart.colonne);
+                if(( ((caseArrivee.ligne == caseDepart.ligne-1) || (caseArrivee.ligne == caseDepart.ligne-2)) && (caseArrivee.colonne == caseDepart.colonne)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ')
+                {
+                    printf("Vous ne pouvez pas avancer car une piece bloque le passage... Veuillez recommencer !\n");
+                    ECHEC = 1;
+                }
+                else if((caseArrivee.ligne == caseDepart.ligne-2) && (caseArrivee.colonne == caseDepart.colonne) && (caseDepart.ligne == 6)) //pour avancer de deux case
+                {
+                    ECHEC = 0;
+                }
+                else if (  (caseArrivee.ligne == caseDepart.ligne-1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && (t[caseArrivee.ligne][caseArrivee.colonne] != ' ' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'P' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'T' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'C' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'F' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'Q' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'K') )
+                {
+                    printf("------- Vous avez éliminé une piece adverse ! --------");
+                    ECHEC = 0;
+                }
+                else if((caseArrivee.ligne != caseDepart.ligne-1) || (caseArrivee.colonne != caseDepart.colonne))
+                {
+                    printf("Mouvement non valide : un pion ne peut se déplacer que d'une case vers l'avant... Veuillez recommencer !\n");
+                    ECHEC = 1;
+                }
+                else
+                {
+                    ECHEC = 0 ;
+                }
             }
-            else if((caseArrivee.ligne == caseDepart.ligne-2) && (caseArrivee.colonne == caseDepart.colonne) && (caseDepart.ligne == 6)) //pour avancer de deux case
+            else if(joueurActif == 2) //si joueur noir
             {
-                ECHEC = 0;
-            }
-            else if (  (caseArrivee.ligne == caseDepart.ligne-1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && (t[caseArrivee.ligne][caseArrivee.colonne] != ' ' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'P' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'T' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'C' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'F' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'Q' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'K') )
-            {
-                printf("------- Vous avez éliminé une piece adverse ! --------");
-                ECHEC = 0;
-            }
-            else if((caseArrivee.ligne != caseDepart.ligne-1) || (caseArrivee.colonne != caseDepart.colonne))
-            {
-                printf("Mouvement non valide : un pion ne peut se déplacer que d'une case vers l'avant... Veuillez recommencer !\n");
-                ECHEC = 1;
-            }
-            else
-            {
-                ECHEC = 0 ;
-            }
-        }
-        else if(joueurActif == 2) //si joueur noir
-        {
-            if(( ((caseArrivee.ligne == caseDepart.ligne+1) || (caseArrivee.ligne == caseDepart.ligne+2)) && (caseArrivee.colonne == caseDepart.colonne)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ')
-            {
-                printf("Vous ne pouvez pas avancer car une piece bloque le passage... Veuillez recommencer !\n");
-                ECHEC = 1;
-            }
-            else if((caseArrivee.ligne == caseDepart.ligne+2) && (caseArrivee.colonne == caseDepart.colonne) && (caseDepart.ligne == 1)) //pour avancer de deux case
-            {
-                ECHEC = 0;
-            }
-            else if (  (caseArrivee.ligne == caseDepart.ligne+1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && (t[caseArrivee.ligne][caseArrivee.colonne] != ' ' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'p' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 't' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'c' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'f' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'q' &&
-                                          t[caseArrivee.ligne][caseArrivee.colonne] != 'k') )
-            {
-                printf("------- Vous avez éliminé une piece adverse ! --------");
-                ECHEC = 0;
-            }
-            else if((caseArrivee.ligne != caseDepart.ligne+1) || (caseArrivee.colonne != caseDepart.colonne))
-            {
-                printf("Mouvement non valide : un pion ne peut se déplacer que d'une case vers l'avant... Veuillez recommencer !\n");
-                ECHEC = 1;
-            }
-            else
-            {
-                ECHEC = 0 ;
+                if(( ((caseArrivee.ligne == caseDepart.ligne+1) || (caseArrivee.ligne == caseDepart.ligne+2)) && (caseArrivee.colonne == caseDepart.colonne)) && t[caseArrivee.ligne][caseArrivee.colonne] != ' ')
+                {
+                    printf("Vous ne pouvez pas avancer car une piece bloque le passage... Veuillez recommencer !\n");
+                    ECHEC = 1;
+                }
+                else if((caseArrivee.ligne == caseDepart.ligne+2) && (caseArrivee.colonne == caseDepart.colonne) && (caseDepart.ligne == 1)) //pour avancer de deux cases
+                {
+                    ECHEC = 0;
+                }
+                else if (  (caseArrivee.ligne == caseDepart.ligne+1) && ((caseArrivee.colonne == caseDepart.colonne+1) || (caseArrivee.colonne == caseDepart.colonne-1)) && (t[caseArrivee.ligne][caseArrivee.colonne] != ' ' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'p' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 't' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'c' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'f' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'q' &&
+                                              t[caseArrivee.ligne][caseArrivee.colonne] != 'k') )
+                {
+                    printf("------- Vous avez éliminé une piece adverse ! --------");
+                    ECHEC = 0;
+                }
+                else if((caseArrivee.ligne != caseDepart.ligne+1) || (caseArrivee.colonne != caseDepart.colonne))
+                {
+                    printf("Mouvement non valide : un pion ne peut se déplacer que d'une case vers l'avant... Veuillez recommencer !\n");
+                    ECHEC = 1;
+                }
+                else
+                {
+                    ECHEC = 0 ;
+                }
             }
         }
     }
@@ -430,6 +448,8 @@ void verifDeplacementArrivee()
     char bidon;
     ECHEC =1; //echec est un variable globale
 
+    changementDePiece();
+    
     while(ECHEC == 1) 
     {
         ECHEC = 0;
@@ -443,21 +463,20 @@ void verifDeplacementArrivee()
         //-------pour trouver l'index de la LETTRE dans l'alphabet ----
         for(i ; i < strlen(alphabet) ; i++)
         {
-        if(alphabet[i] == caseArrivee.charColonne)
-        {
-          caseArrivee.colonne = i;
+            if(alphabet[i] == caseArrivee.charColonne)
+            {
+                caseArrivee.colonne = i;
+            }
         }
-        }
+        
         //-------pour vérifier si la colonne et la ligne existe ----
         if((caseArrivee.colonne < 0) || (caseArrivee.colonne > 7) || (caseArrivee.ligne < 0) || (caseArrivee.ligne > 7))
         {
         printf("CaseArrivé.ligne = %d    caseArrivee.colonne = %d", caseArrivee.ligne, caseArrivee.colonne);
         printf("Mauvaise saisie ! A1 est la première case, H8 est la dernière, Veuillez recommencer \n");
         ECHEC = 1 ;
+        }
     }
-    
-}
-  
 }
 
 //------------------------------------------------- procédure déplacement Cavalier ------------------------------------------------ 
@@ -470,68 +489,94 @@ void deplacementCavalier(){
     {
         ECHEC = 0 ;
         verifDeplacementArrivee(); 
-
-        if((caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne-1) ||
-           (caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne+1) ||
-           (caseArrivee.ligne == caseDepart.ligne-1 && caseArrivee.colonne == caseDepart.colonne-2) ||
-           (caseArrivee.ligne == caseDepart.ligne-1 && caseArrivee.colonne == caseDepart.colonne+2) ||
-           (caseArrivee.ligne == caseDepart.ligne+2 && caseArrivee.colonne == caseDepart.colonne-1) ||
-           (caseArrivee.ligne == caseDepart.ligne+2 && caseArrivee.colonne == caseDepart.colonne+1) ||               
-           (caseArrivee.ligne == caseDepart.ligne+1 && caseArrivee.colonne == caseDepart.colonne-2) ||
-           (caseArrivee.ligne == caseDepart.ligne+1 && caseArrivee.colonne == caseDepart.colonne+2))
+        
+        if(changePiece == 0)//il n'a pas choisi de changer de piece
         {
-            printf("mouvement licite\n");
-            if(joueurActif == 1)
+            
+            
+            if((caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne-1) ||
+               (caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne+1) ||
+               (caseArrivee.ligne == caseDepart.ligne-1 && caseArrivee.colonne == caseDepart.colonne-2) ||
+               (caseArrivee.ligne == caseDepart.ligne-1 && caseArrivee.colonne == caseDepart.colonne+2) ||
+               (caseArrivee.ligne == caseDepart.ligne+2 && caseArrivee.colonne == caseDepart.colonne-1) ||
+               (caseArrivee.ligne == caseDepart.ligne+2 && caseArrivee.colonne == caseDepart.colonne+1) ||               
+               (caseArrivee.ligne == caseDepart.ligne+1 && caseArrivee.colonne == caseDepart.colonne-2) ||
+               (caseArrivee.ligne == caseDepart.ligne+1 && caseArrivee.colonne == caseDepart.colonne+2))
             {
-                if(t[caseArrivee.ligne][caseArrivee.colonne] == ' ')
+                printf("mouvement licite\n");
+                if(joueurActif == 1)
                 {
-                    ECHEC = 0;
+                    if(t[caseArrivee.ligne][caseArrivee.colonne] == ' ')
+                    {
+                        ECHEC = 0;
+                    }
+                    else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'p' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 't' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'c' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'f' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'q' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'k')
+                    {
+                         printf("------- Vous avez éliminé une piece adverse ! --------"); 
+                         ECHEC = 0;
+                    }
+                    else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'P' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'T' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'C' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'F' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'Q' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'K')
+                    {
+                        printf("Une de vos pieces est sur la case d'arrivée.. recommencez\n"); 
+                        ECHEC = 1;
+                    }
+                    else
+                    {
+                        ECHEC = 1;
+                    }
                 }
-                else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'p' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 't' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'c' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'f' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'q' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'k')
+                else if(joueurActif == 2)
                 {
-                     printf("------- Vous avez éliminé une piece adverse ! --------"); 
-                     ECHEC = 0;
-                }
-                else
-                {
-                    ECHEC = 1;
-                }
+                    if(t[caseArrivee.ligne][caseArrivee.colonne] == ' ')
+                    {
+                        ECHEC = 0;
+                    }
+                    else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'P' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'T' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'C' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'F' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'Q' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'K')
+                    {
+                        printf("------- Vous avez éliminé une piece adverse ! --------"); 
+                        ECHEC = 0;
+                    }
+                    else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'p' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 't' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'c' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'f' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'q' ||
+                            t[caseArrivee.ligne][caseArrivee.colonne] == 'k')
+                    {
+                        printf("Une de vos pieces est sur la case d'arrivée.. recommencez\n"); 
+                        ECHEC = 1;
+                    }
+                    else
+                    {
+                        ECHEC = 1;
+                    }
+                }  
             }
-            else if(joueurActif == 2)
+            else
             {
-                if(t[caseArrivee.ligne][caseArrivee.colonne] == ' ')
-                {
-                    ECHEC = 0;
-                }
-                else if(t[caseArrivee.ligne][caseArrivee.colonne] == 'P' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'T' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'C' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'F' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'Q' ||
-                        t[caseArrivee.ligne][caseArrivee.colonne] == 'K')
-                {
-                    printf("------- Vous avez éliminé une piece adverse ! --------"); 
-                    ECHEC = 0;
-                }
-                else
-                {
-                    ECHEC = 1;
-                }
-            }  
+                printf("Mouvement non valide, souvenez-vous, le cavalier se déplace en 'L'");
+                ECHEC = 1;
+            }
         }
-        else
-        {
-            printf("Mouvement non valide, souvenez-vous, le cavalier se déplace en 'L'");
-            ECHEC = 1;
-        }
-   }
    
-   if(ECHEC == 0)
+    }
+    
+   if(ECHEC == 0 && changePiece == 0)
    {
         t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];         //je deplace la piece
         t[caseDepart.ligne][caseDepart.colonne] = ' ';
@@ -550,38 +595,60 @@ void deplacementRoi()
         //
     }
 }
-
-
-
-/*
-
+//--------------------------Module changementDePiece----------------------- 
+void changementDePiece()
+{
+    printf("---------------je suis entrée dans la méthode changementDePiece");
+    changePiece = 0;
+    int choix;
+    printf("---------------------------------\n");
+    printf("--  1- Déplacer la piece       --\n");
+    printf("--  2- Choisir une autre piece --\n");
+    printf("---------------------------------\n");
+    scanf("%d", &choix);
+    
+    switch(choix)
+    {
+        case 1:
+        break;
+        
+        case 2:
+            ECHEC = 0;
+            changePiece = 1;
+        break;
+    }
+}
 
 //------------------------------------------------- Test de la diagonale haut/gauche ------------------------------------------------ // GO CHAMPIONNE !!
 void testDiagonalHG()
 {
     int i, j, Nope;
+    char pieceBloquante;
     
-    
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
             Nope = 1;
         }
     }
     
-    for(i = intColonne, j = ligne-1 ; i> colArrivee , j> ligneArrivee  ; i--, j--)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (en remontant en haut à gauche)
+    for(i = caseDepart.ligne -1, j = caseDepart.colonne; i> caseArrivee.ligne , j> caseArrivee.colonne; i--, j--)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
         
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", 
+        caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -591,13 +658,14 @@ void testDiagonalHG()
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce *nom pièce* en %c%d bloque le passage\n", 
+        caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
@@ -607,32 +675,35 @@ void testDiagonalHG()
 }
 
 //..........................................Test de la diagonale haut/droit..........................................//
-void testDiagonalHD(int intColonne,
-                    int ligne,
-                    int caseArrivee)
+void testDiagonalHD()
 {
     int i, j, Nope;
+    char pieceBloquante;
     
-        for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
+    for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
-
             Nope = 1;
         }
     }
     
-    for(i = intColonne, j = ligne-1 ; i< colArrivee , j> ligneArrivee  ; i++, j--)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (en remontant en haut à droite)
+    for(i = caseDepart.ligne -1, j = caseDepart.colonne; i> caseArrivee.ligne , j< caseArrivee.colonne; i--, j++)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
+        
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", 
+        caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -642,46 +713,53 @@ void testDiagonalHD(int intColonne,
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce %c en %c%d bloque le passage\n", 
+        pieceBloquante, caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
     
-    //Verif Echec au Roi/Pat    
+    //Verif Echec au Roi/Pat
+    
 }
 
 //..........................................Test de la diagonale bas/droit..........................................//
-void testDiagonalBD(int intColonne,
-                    int ligne,
-                    int caseArrivee)
+void testDiagonalBD()
+
 {
-        int i, j, Nope;
+    int i, j, Nope;
+    char pieceBloquante;
     
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
             Nope = 1;
         }
     }
     
-    for(i = intColonne, j = ligne-1 ; i< colArrivee , j< ligneArrivee  ; i++, j++)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (en se déplaçant vers le bas et la gauche)
+    for(i = caseDepart.ligne -1, j = caseDepart.colonne; i< caseArrivee.ligne , j< caseArrivee.colonne; i++, j++)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
+        
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", 
+        caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -691,46 +769,54 @@ void testDiagonalBD(int intColonne,
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce %c en %c%d bloque le passage\n", 
+        pieceBloquante, caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
     
-    //Verif Echec au Roi/Pat    
+    //Verif Echec au Roi/Pat
+    
 }
 
+
+
 //..........................................Test de la diagonale bas/gauche..........................................//
-void testDiagonalBG(int intColonne,
-                    int ligne,
-                    int caseArrivee)
+void testDiagonalBG()
 {
-        int i, j, Nope;
+    int i, j, Nope;
+    char pieceBloquante;
     
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
             Nope = 1;
         }
     }
     
-    for(i = intColonne, j = ligne-1 ; i> colArrivee , j< ligneArrivee  ; i--, j++)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (en descendant vers la gauche)
+    for(i = caseDepart.ligne -1, j = caseDepart.colonne; i< caseArrivee.ligne , j> caseArrivee.colonne; i++, j--)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
+        
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", 
+        caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -740,46 +826,51 @@ void testDiagonalBG(int intColonne,
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce %c en %c%d bloque le passage\n", 
+        pieceBloquante, caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
     
-    //Verif Echec au Roi/Pat    
+    //Verif Echec au Roi/Pat
+    
 }
 
 //------------------------------------------- Test de la rangée vers la gauche (ligne) -----------------------------------------//
-void testRangeeGauche(int intColonneDepart,
-                int LigneDepart,
-                int caseArrivee)
+void testRangeeGauche()
 {
-    int i, j = 0, Nope;
+    int i, j, Nope;
+    char pieceBloquante;
     
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
             Nope = 1;
         }
     }
     
-    for(i = intColonneDepart; i> colArrivee; i--)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (vers la gauche)
+    for(i = caseDepart.colonne; i> caseArrivee.colonne; i--)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", 
+        caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -789,47 +880,54 @@ void testRangeeGauche(int intColonneDepart,
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce %c en %c%d bloque le passage\n", 
+        pieceBloquante, caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
     
-    //Verif Echec au Roi/Pat 
+    //Verif Echec au Roi/Pat
+    
 }
+
 
 
 //------------------------------------------- Test de la rangée vers la droite (ligne) -----------------------------------------//
-void testRangeeDroite(int intColonneDepart,
-                      int LigneDepart,
-                      int caseArrivee)
+void testRangeeDroite()
+
 {
-    int i, j = 0, Nope;
+    int i, j, Nope;
+    char pieceBloquante;
     
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
             Nope = 1;
         }
     }
     
-    for(i = intColonneDepart; i< colArrivee; i++)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (vers la droite)
+    for(i = caseDepart.colonne; i< caseArrivee.colonne; i++)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", 
+        caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -839,46 +937,52 @@ void testRangeeDroite(int intColonneDepart,
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce %c en %c%d bloque le passage\n", 
+        pieceBloquante, caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
     
-    //Verif Echec au Roi/Pat 
+    //Verif Echec au Roi/Pat
+    
 }
+
 
 //---------------------------------------------- Test de la colonne vers le Haut -------------------------------------------------//
-void testColonneHaut(int intColonne,
-                    int ligne,
-                    int caseArrivee)
+void testColonneHaut()
 {
-        int i, j, Nope;
+    int i, j, Nope;
+    char pieceBloquante;
     
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
             Nope = 1;
         }
     }
     
-    for(j = ligne-1 ; j> ligneArrivee  ; j--)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (vers le haut)
+    for(j = caseDepart.ligne - 1; j > caseArrivee.ligne; j--)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", 
+        caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -888,47 +992,50 @@ void testColonneHaut(int intColonne,
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce %c en %c%d bloque le passage\n", 
+        pieceBloquante, caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
     
-    //Verif Echec au Roi/Pat    
+    //Verif Echec au Roi/Pat
+    
 }
-
 
 //---------------------------------------------- Test de la colonne vers le Bas -------------------------------------------------//
-void testColonneHaut(int intColonne,
-                    int ligne,
-                    int caseArrivee)
+void testColonneBas()
 {
-        int i, j, Nope;
+    int i, j, Nope;
+    char pieceBloquante;
     
+    //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
     for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
     {
-        if(piecesDuJoueurActif[i] == caseArrivee)
+        if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
         {
             Nope = 1;
         }
     }
     
-    for(j = ligne-1 ; j< ligneArrivee  ; j++)
+    //---- Pour vérifier si aucune pièce ne bloque le passage (vers le haut)
+    for(j = caseDepart.ligne - 1; j < caseArrivee.ligne; j++)
     {
         if(t[i][j] != ' ')
         {
             Nope = 2;
+            pieceBloquante = t[i][j];
         }
     }
     
     if(Nope == 1 && Nope == 2)
     {
-        printf("Une de vos pièces est déjà sur la case *ex : B3*, et la pièce *nom pièce* y bloque l'accès\n");
+        printf("Une de vos pièces est déjà sur la case %c%d, et la pièce %c y bloque l'accès\n", caseArrivee.charColonne, caseArrivee.ligne, pieceBloquante);
         ECHEC = 1;
     }
     else if(Nope == 1)
@@ -938,18 +1045,17 @@ void testColonneHaut(int intColonne,
     }
     else if(Nope == 2)
     {
-        printf("La pièce *nom pièce* en *ex : B3* bloque le passage\n");
+        printf("La pièce %c en %c%d bloque le passage\n", pieceBloquante, caseArrivee.charColonne, caseArrivee.ligne);
         ECHEC = 1;
     }
     else
     {
-        caseArrivee = pieceTrouve;
-        pieceTrouve = ' ';
+        t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+        t[caseDepart.ligne][caseDepart.colonne] = ' ';
         printf("Déplacement effectué !\n");
         ECHEC = 0;
     }
     
-    //Verif Echec au Roi/Pat    
+    //Verif Echec au Roi/Pat
+    
 }
-
-// */
