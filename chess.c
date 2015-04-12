@@ -7,7 +7,7 @@ a ajouter a l'affichage ?
   "Voulez vous donnez un nom aux joueurs?  (O/N):"         //si choix non : "joueur1" et "joueur2" par défault (a afficher)
      "Joueur 1 (pieces blanche), quel est votre nom ? :"
      "joueur 2 (pieces noir)" quel est votre nom ?: "
-  "Antoine joue les pièces blanches, Marion les noires" 
+  "Antoine joue les pièces blanchmake cees, Marion les noires" 
   
   "La partie commence !"
   
@@ -84,8 +84,10 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
      Autrement --> Jeu jouable !  \o/
      (Enfin... Il faut bien sûr faire une vraie grosse session de tests pour tout vérifier, mais j'ai fait une petite partie qui tourne très bien =))--> VU
      
+     Pour verifCaseChoisie tu proposes quoi ? ^^
+     
      Antoine :
-     OK j'ai tester, il y a un bug sur mon module de pion(le déplacement de deux coup pour les pieces noires) je vais corriger, sinon tout a l'air de marcher !!.
+     12/04 -> la gestion de la mise en echec est quasiment fini (il reste qu'a gérer le test des diagonales), tout fonctionne          parfaitement :) on peut déjà jouer avec : tour, pion, cavalier avec la gestion de la mise en ECHEC.
      
      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 */
@@ -111,6 +113,20 @@ void changementDePiece();
 void deplacementReineFouTour();
 void testRangeesColonnes();
 void testDiagonales();
+void testSiEchec();
+    void affichageEchecRoiBlanc();
+    void affichageEchecRoiNoire();
+    void testSiPat();
+    void testDevant(int i, int j);
+    void testArriere(int i, int j);
+    void testDroite(int i, int j);
+    void testGauche(int i, int j);
+    void testDiagoHG(int i, int j);
+    void testDiagoHD(int i, int j);
+    void testDiagoBG(int i, int j);
+    void testDiagoBD(int i, int j);
+void testSiEchecEtMat();
+
 
 // ---------------------------------------- Déclaration des types en global ------------------
   struct infoCase                              
@@ -129,7 +145,7 @@ char t[8] [8]={
     't','c','f','q','k','f','c','t',
     'p','p','p','p','p','p','p','p',
     ' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ','t',' ','F','K',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',
     'P','P','P','P','P','P','P','P',
@@ -147,6 +163,8 @@ char piecesDuJoueurActif[10];
 int ECHEC, changePiece = 0;
 struct infoCase caseDepart; 
 struct infoCase caseArrivee;
+int RoiBlancEnECHEC = 0;
+int RoiNoireEnECHEC = 0;
 
 // ---------------------------------------- Procédure principale ------------------
 main() 
@@ -156,7 +174,7 @@ main()
     
 printf("_______________________________________________________________________________________________________\n");
 printf("_______________________________________________________________________________________________________\n");
-printf("   .d8888b.  888    888 8888888888  .d8888b.   .d8888b.      8888888b. 8888888  .d8888b.   8888888888\n");
+printf("   .d8888b.  888    888 8888888888  .d8888b.   .d8888b.      8888888b. 8888888  .d8888b.   8888888888   *\n");
 printf("  d88P  Y88b 888    888 888        d88P  Y88b d88P  Y88b     888   Y88b  888   d88P  Y88b  888       \n");
 printf("  888    888 888    888 888        Y88b.      Y88b.          888    888  888   Y88b.       888       \n");
 printf("  888        8888888888 8888888     Y888b.    Y888b.         888   d88P  888    Y888b.     8888888   \n");
@@ -166,6 +184,8 @@ printf("  Y88b  d88P 888    888 888        Y88b  d88P Y88b  d88P     888        
 printf("   Y8888P    888    888 8888888888   Y8888P     Y8888P       888       8888888  Y8888P     8888888888\n");
 printf("_______________________________________________________________________________________________________\n");
 printf("_______________________________________________________________________________________________________\n\n\n");
+printf("                                                                                                       \n");
+printf("                        *Jeux video garanti sans colorant ni conservateur*     \n");
 
 
    printf("Hello World! et bienvenue sur le jeu d'échec !\n\n");
@@ -357,7 +377,7 @@ char verifCaseChoisie(char charColonne,
     caseDepart.colonne = intColonne;
 }
 
-//------------------------------------------------- procédure déplacement pion ------------------------------------------------ // module terminé
+//------------------------------------------------- procédure déplacement pion ------------------------------------------------ 
 void deplacementPion()
 {
     printf("------------------ Je suis dans la méthode déplacementPion\n");
@@ -398,7 +418,11 @@ void deplacementPion()
                        )
                     {
                         printf("mouvement licite\n");
-                        verifEliminationPiece();
+                        testSiEchec();
+                        if(ECHEC == 0)
+                        {    
+                          verifEliminationPiece();
+                        }
                     }
                 else
                 {
@@ -433,7 +457,11 @@ void deplacementPion()
                        )
                     {
                         printf("mouvement licite\n");
-                        verifEliminationPiece();
+                        testSiEchec();
+                        if(ECHEC == 0)
+                        {    
+                          verifEliminationPiece();
+                        }
                     }
                 else
                 {
@@ -470,7 +498,9 @@ void verifDeplacementArrivee()
     int i = 0, choix = 0;
     char bidon;
     ECHEC =1; //echec est un variable globale
-
+    RoiBlancEnECHEC = 0;
+    RoiNoireEnECHEC = 0;
+    
     changementDePiece();
     
     while(ECHEC == 1) 
@@ -560,7 +590,8 @@ void verifEliminationPiece()
 }
 
 //------------------------------------------------- procédure déplacement Cavalier ------------------------------------------------ 
-void deplacementCavalier(){
+void deplacementCavalier()
+{
     printf("------------------ Je suis dans la méthode déplacementCavalier\n");
     ECHEC = 1; //c'est une variable globale
 
@@ -584,7 +615,15 @@ void deplacementCavalier(){
                (caseArrivee.ligne == caseDepart.ligne+1 && caseArrivee.colonne == caseDepart.colonne+2))
             {
                 printf("mouvement licite\n");
-                verifEliminationPiece(); //c'est ici qu'on vérifie si il a mangé une piece
+                testSiEchec();
+                if(ECHEC == 0)
+                {    
+                   testSiEchec();
+                   if(ECHEC == 0)
+                   {    
+                        verifEliminationPiece();
+                   }
+                }
             }
             else
             {
@@ -624,7 +663,12 @@ void deplacementRoi()
                (caseArrivee.ligne == caseDepart.ligne-1) && (caseArrivee.colonne == caseDepart.colonne-1))
             {
                 printf("mouvement licite\n");
-                verifEliminationPiece();
+                
+                testSiEchec();
+                if(ECHEC == 0)
+                {    
+                    verifEliminationPiece();
+                }
             }
             else
             {
@@ -632,6 +676,9 @@ void deplacementRoi()
                 ECHEC = 1;
             }
         }
+
+
+
     }
     
    if(ECHEC == 0 && changePiece == 0)
@@ -662,6 +709,7 @@ void deplacementReineFouTour()
                 printf("--- Deplacement de la reine ou du fou en diagonale\n");
                 printf("Mouvement licite\n");
                 testDiagonales();
+                testSiEchec();
             }
             else if((pieceChoisie == 'Q' || pieceChoisie == 'T') 
             && (caseDepart.ligne == caseArrivee.ligne || caseDepart.colonne == caseArrivee.colonne))
@@ -669,6 +717,7 @@ void deplacementReineFouTour()
                 printf("--- Deplacement de la reine ou de la tour en colonne ou rangee\n");
                 printf("Mouvement licite\n");
                 testRangeesColonnes();
+                testSiEchec();
             }
             else
             {
@@ -677,6 +726,7 @@ void deplacementReineFouTour()
             }
         }
     }
+    
     
     if(ECHEC == 0 && changePiece == 0)
     {
@@ -871,4 +921,268 @@ void testRangeesColonnes()
     }
     
     //Verif Echec au Roi/Pat
+}
+
+
+
+
+//----------------------- Module de vérication de l'ECHEC au ROI --------------------------
+void testSiEchec()
+{   
+    printf("----je viens d'entrer dans testSiEchec() ");
+    RoiBlancEnECHEC = 0;
+    RoiNoireEnECHEC = 0;
+    int i, j;
+    
+    /* je deplace la piece pour tester si echec*/
+    t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
+    t[caseDepart.ligne][caseDepart.colonne] = ' ';
+
+    /* je parcours le tableau pour tester chaque piece*/
+    for(i = 0 ; i < 8 ; i++)
+    {
+        //printf("---------on test la ligne : %d\n",i);
+        for(j = 0 ; j < 8 ; j++)
+        {
+            if(t[i][j] == 't' || t[i][j] == 'T')
+            {
+                testDevant(i, j);
+                testArriere(i, j);
+                testDroite(i, j);
+                testGauche(i, j);
+            }
+            else if(t[i][j] == 'p')
+            { 
+                if((t[i + 1][j - 1] == 'K') ||
+                   (t[i + 1][j + 1] == 'K'))
+                {
+                    affichageEchecRoiBlanc();
+                }
+            }
+            else if(t[i][j] == 'P')
+            {
+                if((t[i + 1][j - 1] == 'k') ||
+                   (t[i + 1][j + 1] == 'k'))
+                {
+                    affichageEchecRoiNoire();
+                }
+            }
+            else if(t[i][j] == 'c')
+            {
+                if((t[i - 2][j - 1] == 'K') ||
+                   (t[i - 2][j + 1] == 'K') ||
+                   (t[i - 1][j - 2] == 'K') ||
+                   (t[i - 1][j + 2] == 'K') ||
+                   (t[i + 2][j - 1] == 'K') ||
+                   (t[i + 2][j + 1] == 'K') ||
+                   (t[i + 1][j - 2] == 'K') ||
+                   (t[i + 1][j + 2] == 'K'))
+                {
+                    affichageEchecRoiBlanc();
+                }
+            }
+            else if(t[i][j] == 'C')
+            {
+                if((t[i - 2][j - 1] == 'k') ||
+                   (t[i - 2][j + 1] == 'k') ||
+                   (t[i - 1][j - 2] == 'k') ||
+                   (t[i - 1][j + 2] == 'k') ||
+                   (t[i + 2][j - 1] == 'k') ||
+                   (t[i + 2][j + 1] == 'k') ||
+                   (t[i + 1][j - 2] == 'k') ||
+                   (t[i + 1][j + 2] == 'k'))
+                {
+                    affichageEchecRoiNoire();
+                }    
+            }
+            else if(t[i][j] == 'f' || t[i][j] == 'F')
+            {
+                //testDiagoHG(i, j);
+                //testDiagoHD(i, j); 
+                //testDiagoBG(i, j);
+                //testDiagoBD(i, j);
+            }
+            
+        }
+    }
+    /* je remet les pieces comme avant*/
+    t[caseDepart.ligne][caseDepart.colonne] = t[caseArrivee.ligne][caseArrivee.colonne];
+    t[caseArrivee.ligne][caseArrivee.colonne] = ' ';
+    
+    if((joueurActif == 1 && RoiBlancEnECHEC == 1) || (joueurActif == 2 && RoiNoireEnECHEC ==1)) 
+    {
+        ECHEC = 1 ;
+        printf(" Déplacement impossible, il met votre Roi en ECHEC ! Veuillez recommencer\n ");
+    }
+}
+
+
+void affichageEchecRoiBlanc()
+{
+    RoiBlancEnECHEC = 1;
+    ECHEC = 1;
+    printf("*******************************\n");
+    printf("***    ECHEC au roi blanc   ***\n"); 
+    printf("*******************************\n");
+}
+
+void affichageEchecRoiNoire()
+{
+    RoiNoireEnECHEC = 1;
+    ECHEC = 1;
+    printf("*******************************\n");
+    printf("***    ECHEC au roi noire   ***\n"); 
+    printf("*******************************\n"); 
+}
+//---------------------- Module de test devant pour tester l'ECHEC au roi
+void testDevant(int i, int j)
+{
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    k = i;
+    //printf("J'ai trouver une tour noir !\n");         //      for(int k = 0 ; k < (8 - i) ; k++)
+    while((k < 8) && RoiBlancEnECHEC == 0 && RoiNoireEnECHEC == 0 && piecePercute == 0)
+    {
+       // printf("---- dans le while avec K : %d et J : %d\n",k,j);
+        //printf("----contenu : %c\n",t[k][j]);
+        if(t[k][j] == 'K')
+        {
+            affichageEchecRoiBlanc();
+        }
+        else if(t[k][j] == 'k')
+        {
+            affichageEchecRoiNoire();
+        }
+        else if((t[k][j] != ' ') &&(t[k][j] != 't'))
+        {
+            piecePercute = 1;
+            //printf("j'ai percuté une piece ligne : %d | colonne : %d \n",k,j);
+        }
+        else
+        {}
+        k++;
+    }
+}
+//---------------------- Module de test derrière pour tester l'ECHEC au roi
+void testArriere(int i, int j)
+{
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    k = i;
+    //printf("J'ai trouver une tour noir !\n");         //      for(int k = 0 ; k < (8 - i) ; k++)
+    while((k >= 0 ) && RoiBlancEnECHEC == 0 && RoiNoireEnECHEC == 0 && piecePercute == 0)
+    {
+       // printf("---- dans le while avec K : %d et J : %d\n",k,j);
+        //printf("----contenu : %c\n",t[k][j]);
+        if(t[k][j] == 'K')
+        {
+            affichageEchecRoiBlanc();
+        }
+        else if(t[k][j] == 'k')
+        {
+            affichageEchecRoiNoire();
+        }
+        else if((t[k][j] != ' ') &&(t[k][j] != 't'))
+        {
+            piecePercute = 1;
+            //printf("j'ai percuté une piece ligne : %d | colonne : %d \n",k,j);
+        }
+        else
+        {}
+        k--;
+    }
+}
+
+//---------------------- Module de test a droite pour tester l'ECHEC au roi
+void testDroite(int i, int j)
+{
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    k = j;
+    //printf("J'ai trouver une tour noir !\n");         //      for(int k = 0 ; k < (8 - i) ; k++)
+    while((k < 8 ) && RoiBlancEnECHEC == 0 && RoiNoireEnECHEC == 0 && piecePercute == 0)
+    {
+       // printf("---- dans le while avec K : %d et J : %d\n",k,j);
+        //printf("----contenu : %c\n",t[k][j]);
+        if(t[i][k] == 'K')
+        {
+            affichageEchecRoiBlanc();
+        }
+        else if(t[i][k] == 'k')
+        {
+            affichageEchecRoiNoire();
+        }
+        else if((t[i][k] != ' ') &&(t[i][k] != 't'))
+        {
+            piecePercute = 1;
+            //printf("j'ai percuté une piece ligne : %d | colonne : %d \n",k,j);
+        }
+        else
+        {}
+        k++;
+    }
+}
+
+//---------------------- Module de test a gauche pour tester l'ECHEC au roi
+void testGauche(int i, int j)
+{
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    k = j;
+    //printf("J'ai trouver une tour noir !\n");         //      for(int k = 0 ; k < (8 - i) ; k++)
+    while((k >= 0 ) && RoiBlancEnECHEC == 0 && RoiNoireEnECHEC == 0 && piecePercute == 0)
+    {
+       // printf("---- dans le while avec K : %d et J : %d\n",k,j);
+        //printf("----contenu : %c\n",t[k][j]);
+        if(t[i][k] == 'K')
+        {
+            affichageEchecRoiBlanc();
+        }
+        else if(t[i][k] == 'k')
+        {
+            affichageEchecRoiNoire();
+        }
+        else if((t[i][k] != ' ') &&(t[i][k] != 't'))
+        {
+            piecePercute = 1;
+            //printf("j'ai percuté une piece ligne : %d | colonne : %d \n",k,j);
+        }
+        else
+        {}
+        k--;
+    }
+}
+
+void testDiagoHG(int i, int j)
+{
+    int l = 0, c = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    l = i;
+    c = j;
+    
+    //while( ) ------------------------------>> ICI il faut que tu fasse la boucle de verif
+}
+
+//----------------------- Module de vérication de l'ECHEC ET MAT au ROI --------------------------//
+void testSiEchecEtMat()
+{
+    /*
+        il faudra utiliser testSiEchec avec les differents mouvement du Roi ET des autres joueurs de la même couleur (pour protéger le ROI)
+    
+    */
+}
+
+
+//----------------------- Module de vérication du Pat --------------------------//
+void testSiPat()
+{
+    /*
+        -
+    
+    */
 }
