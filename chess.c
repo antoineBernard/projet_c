@@ -87,7 +87,7 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
      MODIFICATIONS EFFECTUEES : 19/04
      Marion : Pour verifCaseChoisie : enlève les paramètres et véfifie qu'elle s'utilise avec les variables globales, c'est tout =)
      
-     Antoine : le module echec et mat est toujours entrain de se faire... le programme est complexe maintenant, et je fais en sorte que le module se serve de testSiEchec(), deplacementCavalier(), depalcementPion(), etc.... donc c'est long :(
+     Antoine : le module echec et mat est toujours entrain de se faire... je galère un peu mais j'ai avancé, il fonctionne sur les pions, et les cavaliers. (seuls un pion ou un cavalier peut sauver le roi,le roi ne peut pas encore se sauver lui même)
      
      
      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,14 +156,14 @@ void runTestEchecMatPion();
 
 char t[8] [8]={
     't',' ','f','q',' ','f',' ','t',
-    ' ',' ',' ','p',' ',' ',' ',' ',
-    ' ',' ',' ','p',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ','c',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
     ' ','k',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ',' ','T',' ','p',' ',
     ' ',' ',' ',' ',' ',' ',' ','p',
     'P','P','P','P','P','P','P','P',
     ' ','C','F','Q','K',' ',' ','T'
-}; 
+};
 
 
 int partietermine=0, echecEtMatRoiBlanc, echecEtMatRoiNoir;
@@ -838,9 +838,7 @@ void deplacementReineFouTour()
             {
                 printf("Mouvement licite\n");
                 testRangeesColonnes();
-                printf("-je rentre dans testSiEchec() avec t[2][3] = %c\n", t[2][3]);
                 testSiEchec();
-                printf("-je sors de testSiEchec() avec t[2][3] = %c\n", t[2][3]);
                 if(ECHEC == 0)
                 {
                     verifEliminationPiece();
@@ -1116,7 +1114,6 @@ void testRangeesColonnes()
 //----------------------- Module de vérication de l'ECHEC au ROI --------------------------
 void testSiEchec()
 {   
-    //printf("----je viens d'entrer dans testSiEchec() \n");
     RoiBlancEnECHEC = 0;
     RoiNoireEnECHEC = 0;
     int i, j;
@@ -1216,7 +1213,6 @@ void testSiEchec()
         ECHEC = 1 ;
         printf(" Déplacement impossible, il met votre Roi en ECHEC ! Veuillez recommencer\n ");
     }
-
 }
 
 void affichageEchecRoiBlanc()
@@ -1272,7 +1268,6 @@ void affichageEchecRoiNoire()
             printf("*******************************\n"); 
         }
     }
-    printf("Je sors d'affichageEchecRoiNoire() avec t[2][3] = %c\n", t[2][3]);
 }
 //---------------------- Module de test devant pour tester l'ECHEC au roi
 void testDevant(int i, int j)
@@ -1645,18 +1640,6 @@ void testDiagoBD(int i, int j)
 //----------------------- Module de vérication de l'ECHEC ET MAT au ROI --------------------------//
 void testSiEchecEtMat()
 {
-    /*
-        il faudra utiliser testSiEchec avec les differents mouvement du Roi ET des autres joueurs de la même couleur (pour protéger le ROI)
-        
-        a mettre dans affichageRoiNoireEnEchec() =>
-            if(joueurActif == 1)
-            {
-                testSiEchecEtMat();
-                
-                RoiNoireEnEchec = 1 //on le remet comme il était
-            }
-    
-    */
         /*je sauvegarde les "vrai" caseDepart et caseArrivee*/
     sauvegardeCaseDepart.ligne = caseDepart.ligne;
     sauvegardeCaseDepart.colonne = caseDepart.colonne;
@@ -1670,6 +1653,7 @@ void testSiEchecEtMat()
     int roiBlancSauve = 0;
     echecEtMatRoiBlanc = 1;
     echecEtMatRoiNoir = 1;
+ 
     
     if(joueurActif == 1) //si c'est le joueurBlanc, c'est les pieces noire qui doivent sauver le roi
     {
@@ -1677,12 +1661,14 @@ void testSiEchecEtMat()
         {
             for(j = 0 ; j < 8 ; j++)//je parcours tout le tableau à la recherche des pieces noires
             {   
+                roiNoireSauve = 0;
                 caseDepart.ligne = i;
                 caseDepart.colonne = j;
-                
                 if(t[i][j] == 'c') 
                 {
                     
+                    printf("j'ai trouvé un cavalier\n");
+
                     caseArrivee.ligne = caseDepart.ligne -2;
                     caseArrivee.colonne = caseDepart.colonne -1;
                     
@@ -1690,7 +1676,8 @@ void testSiEchecEtMat()
 
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
-                    
+
+
                     caseArrivee.ligne = caseDepart.ligne -2;
                     caseArrivee.colonne = caseDepart.colonne +1;
                     
@@ -1698,7 +1685,7 @@ void testSiEchecEtMat()
 
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
-                                    
+                        
                     caseArrivee.ligne = caseDepart.ligne -1;
                     caseArrivee.colonne = caseDepart.colonne -2;
                     
@@ -1706,7 +1693,7 @@ void testSiEchecEtMat()
 
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
-                                                
+                      
                     caseArrivee.ligne = caseDepart.ligne -1;
                     caseArrivee.colonne = caseDepart.colonne +2;
                     
@@ -1714,7 +1701,7 @@ void testSiEchecEtMat()
 
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
-            
+
                     caseArrivee.ligne = caseDepart.ligne +2;
                     caseArrivee.colonne = caseDepart.colonne -1;
                     
@@ -1722,7 +1709,7 @@ void testSiEchecEtMat()
 
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
-                                            
+                    
                     caseArrivee.ligne = caseDepart.ligne +2;
                     caseArrivee.colonne = caseDepart.colonne +1;
                     
@@ -1730,7 +1717,7 @@ void testSiEchecEtMat()
 
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
-                                            
+                          
                     caseArrivee.ligne = caseDepart.ligne +1;
                     caseArrivee.colonne = caseDepart.colonne -2;
                     
@@ -1738,7 +1725,7 @@ void testSiEchecEtMat()
 
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
-                                            
+                      
                     caseArrivee.ligne = caseDepart.ligne +1;
                     caseArrivee.colonne = caseDepart.colonne +2;
                     
@@ -1746,6 +1733,7 @@ void testSiEchecEtMat()
                     
                     if(RoiNoireEnECHEC == 0)
                         roiNoireSauve = 1;
+                    
                     
                     if(roiNoireSauve == 1)
                      {
@@ -1805,10 +1793,8 @@ void testSiEchecEtMat()
                         
                         
                     if(roiNoireSauve == 1)
-                     {
                         echecEtMatRoiNoir = 0;
-                        printf("le roi noir peut être sauvé par un pion\n");
-                     }
+
                      
                     caseDepart.ligne = sauvegardeCaseDepart.ligne;
                     caseDepart.colonne = sauvegardeCaseDepart.colonne;
@@ -1816,23 +1802,23 @@ void testSiEchecEtMat()
                     caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
                     caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
                 }
-
+                
             }
         }
     }
     
-    if(roiNoireSauve == 0)
-        echecEtMatRoiNoir = 1;
+    //if(roiNoireSauve == 0)
+    //    echecEtMatRoiNoir = 1;
         
     flagTestSiEchecEtMat = 0 ;
-    
-    /*je remet les "vrai" caseDepart et caseArrivee via nos sauvegarde*/
 
     
 }
 
 void runTestEchecMatElimination()
 {
+    char valeurCaseMange;
+   
     if(joueurActif == 1)//si c'est le joueurBlanc, c'est les pieces noire qui doivent sauver le roi
     {
         if(t[caseArrivee.ligne][caseArrivee.colonne] != 't' &&
@@ -1842,7 +1828,14 @@ void runTestEchecMatElimination()
            t[caseArrivee.ligne][caseArrivee.colonne] != 'q' &&
            t[caseArrivee.ligne][caseArrivee.colonne] != 'p' )
         {
+            /* sauvegarde de la piece visé en cas d'élimination*/
+          valeurCaseMange = t[caseArrivee.ligne][caseArrivee.colonne];
+        
           testSiEchec(); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
+                      
+           /* on replace la piece visé car si il y a élimination il la effacé*/
+          t[caseArrivee.ligne][caseArrivee.colonne] = valeurCaseMange;
+
         }  
     }
     else if(joueurActif == 2)//si c'est le joueur Noirn c'est les pieces blanches qui doivent sauver le roi
@@ -1854,7 +1847,13 @@ void runTestEchecMatElimination()
            t[caseArrivee.ligne][caseArrivee.colonne] != 'Q' &&
            t[caseArrivee.ligne][caseArrivee.colonne] != 'P' )
         {
+            /* sauvegarde de la piece visé en cas d'élimination*/
+          valeurCaseMange = t[caseArrivee.ligne][caseArrivee.colonne];
+        
           testSiEchec(); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
+                      
+           /* on replace la piece visé car si il y a élimination il la effacé*/
+          t[caseArrivee.ligne][caseArrivee.colonne] = valeurCaseMange;
         }  
     }
 
@@ -1873,7 +1872,7 @@ void runTestEchecMatPion()
            t[caseArrivee.ligne][caseArrivee.colonne] != 'p' &&
            t[caseArrivee.ligne][caseArrivee.colonne] != ' ')
         {
-          valeurCaseMange = t[caseArrivee.ligne][caseArrivee.colonne];//j'utilise une variable poru stocké la case "mangé" pendant le test
+          valeurCaseMange = t[caseArrivee.ligne][caseArrivee.colonne];//j'utilise une variable pour stocké la case "mangé" pendant le test
         
           testSiEchec(); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
           
