@@ -7,7 +7,7 @@ a ajouter a l'affichage ?
   "Voulez vous donnez un nom aux joueurs?  (O/N):"         //si choix non : "joueur1" et "joueur2" par défault (a afficher)
      "Joueur 1 (pieces blanche), quel est votre nom ? :"
      "joueur 2 (pieces noir)" quel est votre nom ?: "
-  "Antoine joue les pièces blanchmake cees, Marion les noires" 
+  "Antoine joue les pièces blanches, Marion les noires" 
   
   "La partie commence !"
   
@@ -70,13 +70,12 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
 
 
 -------TODO------ : 
-    -   test de saisie (plusieurs) => sur les switch aussi
-    -   pouvoir abandonner la partie
+    -   test de saisie (plusieurs) => sur les switch aussi : bug si char
     -   travailler sur l'ergonomie
     -   dans testSiEchec(), factoriser pour que la boucle s'arrête dès le premier echec
     - Possibilité d'enregistrement
     - Possibilité de quitter la partie (ou d'abandonner) en cours de partie        (system("clear");)
-    - lorsqu'on essaie de manger une de ses pieces, il nous propose pas de choisir une autre piece...
+    - lorsqu'on essaie de manger une de ses pieces, il nous propose pas de choisir une autre piece... --> Il ne le demande qu'une fois maintenant
     - virer le block de commentaire en haut + les printf en commentaire
 
     
@@ -84,11 +83,12 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
 */
 /*
      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     MODIFICATIONS EFFECTUEES : 19/04
-     Marion : Pour verifCaseChoisie : enlève les paramètres et véfifie qu'elle s'utilise avec les variables globales, c'est tout =)
+     MODIFICATIONS EFFECTUEES : 21/04
+     Marion : 
      
-     Antoine : le module echec et mat est toujours entrain de se faire... je galère un peu mais j'ai avancé, il fonctionne sur les pions, et les cavaliers. (seuls un pion ou un cavalier peut sauver le roi,le roi ne peut pas encore se sauver lui même)
-     
+     Antoine : "Work In Progress" sur le module d'échec et mat, toute les pieces sauf le fou peuvent sauver un roi en echec (marche seulement sur le joueur noir pour l'instant).
+     ps : j'ai galéré à cause des variables globales ><
+
      
      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 */
@@ -101,6 +101,8 @@ verifEchecMat();    ---> il faut tester tous les déplacements autour du roi
 
 void affichage();
 void deplacementPiece();
+void chargement();
+void sauvegarde();
 void verifCaseChoisie();
 void deplacementPion();
 void verifDeplacementArrivee();
@@ -151,18 +153,18 @@ void runTestEchecMatPion();
     ' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',
     'P','P','P','P','P','P','P','P',
-    'T','C','F','Q','K',' ',' ','T'
+    'T','C','F','Q','K','F','C','T'
 }; */
 
 char t[8] [8]={
-    't',' ','f','q',' ','f',' ','t',
-    ' ',' ',' ',' ',' ','c',' ',' ',
+    't','c','f','q','k','f','c','t',
+    'p',' ','p','p','p','p','p','p',
     ' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ','k',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ','T',' ','p',' ',
-    ' ',' ',' ',' ',' ',' ',' ','p',
-    'P','P','P','P','P','P','P','P',
-    ' ','C','F','Q','K',' ',' ','T'
+    ' ',' ',' ',' ',' ','k','t',' ',
+    ' ',' ',' ','K',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    'P','P','P','P','P','P',' ','P',
+    'T','C','F','Q','K','F','C','T'
 };
 
 
@@ -181,12 +183,14 @@ struct infoCase sauvegardeCaseArrivee;
 struct infoCase sauvegardeCaseDepart;
 int RoiBlancEnECHEC = 0;
 int RoiNoireEnECHEC = 0;
+int percut = 0; //pour tester la percution dans testSiEchecEtMat()
 int pasTouchayK1 = 1; // flag Roi Blanc pas touché
 int pasTouchayK2 = 1; // flag Roi Noir pas touché
 int pasTouchayTP1 = 1; // flag Tour Blanche pour petit roque (droite de l'échiquier) place initiale
 int pasTouchayTG1 = 1; // flag Tour Blanche pour grand roque (gauche de l'échiquier) place initiale
 int pasTouchayTP2 = 1; // flag Tour Noire pour petit roque (droite de l'échiquier) place initiale
 int pasTouchayTG2 = 1; // flag Tour Noire pour grand roque (gauche de l'échiquier) place initiale
+int roque = 0 ;
 
 // ---------------------------------------- Procédure principale ------------------
 main() 
@@ -212,15 +216,15 @@ printf("\n\n\n\n\n");
     
     while(choix != 0)
     {
-       printf("Hello World! et bienvenue sur le jeu d'échec !\n\n");
-       printf("-------------    MENU      -----------------\n");
-       printf("    |  -1- Commencer une nouvelle partie | \n");
-       printf("    |  -2- Charger une partie            | \n");
-       printf("    |  -0- QUITTER                       | \n");
-       printf("--------------------------------------------\n");
-       printf("choix : ");
-       
-       scanf("%d", &choix);
+        printf("Hello World! et bienvenue sur le jeu d'échec !\n\n");
+        printf("-------------    MENU      -----------------\n");
+        printf("    |  -1- Commencer une nouvelle partie | \n");
+        printf("    |  -2- Charger une partie            | \n");
+        printf("    |  -0- QUITTER                       | \n");
+        printf("--------------------------------------------\n");
+        
+        printf("choix : ");
+        scanf("%d", &choix);
 
         switch (choix)
         {
@@ -259,7 +263,7 @@ printf("\n\n\n\n\n");
             }
             break;
           case 2:
-                //ici on appelle la methode chargement
+                chargement();
             break;
           case 0:
             printf("Au revoir, et a bientot (coquin) !\n");
@@ -269,6 +273,8 @@ printf("\n\n\n\n\n");
             printf("Erreur de saisie, veuillez recommencer\n");
             break;
         }
+        
+        
     }    
 }
 // --------------------------------------------- Fonction affichage du plateau--------------------
@@ -287,13 +293,15 @@ void affichage()
     }
     if(joueurActif == 1)
     {
-         printf("                       ____________________________________ \n");
+         //printf("     ----- 0- Quitter  1- Sauvegarder  2- Changer de piece  3- Faire un roque -----\n");
+         printf("                       _____________________________________\n");
          printf("                       ----- Au joueur BLANC de jouer ! ----\n");
          printf("                                  (P,T,C,F,Q,K)\n");
     }
     else if(joueurActif == 2)
     {
-         printf("                       ____________________________________ \n");
+         //printf("     ----- 0- Quitter  1- Sauvegarder  2- Changer de piece  3- Faire un roque -----\n");     
+         printf("                       _____________________________________\n");
          printf("                       ----- Au joueur NOIR de jouer ! ----\n");
          printf("                                  (p,t,c,f,q,k)\n");
     }
@@ -339,50 +347,110 @@ void testMauvaiseSaisi()
 // --------------------------------------------- Fonction déplacement de piece--------------------
 void deplacementPiece()
 {
-  char alphabet[10]= "ABCDEFGH";  
-  int j = 0, mauvaiseSaisi =0, flagOK=0;
-  caseDepart.colonne = 0 ;
-  char bidon;
-  char pieceTrouve;
-  int ligneArrivee;
-  ECHEC = 1; //ECHEC est une variable globale
-  while(ECHEC == 1)
-  {
-      ECHEC = 0;
-      bidon = getchar();
-      printf("quelle piece voulez-vous déplacer ? ( ex: B2) : ");  
-      scanf("%c%d", &caseDepart.charColonne, &caseDepart.ligne);
-      caseDepart.charColonne = toupper(caseDepart.charColonne);
-
-      caseDepart.ligne--;      
-      verifCaseChoisie();
-      pieceTrouve = t[caseDepart.ligne][caseDepart.colonne] ;
-      pieceTrouve = toupper(pieceTrouve);
-
-       //rangeeDepart = ligneDepart ;
-           
-                // A PARTIR D'ICI ON A ACCES AUX VARIABLES caseDepart.colonne, pieceTrouve, caseDepart.ligne pour le reste des fonctions 
+    printf("je suis dans déplacementPiece()\n");
+    char alphabet[10]= "ABCDEFGH";  
+    int i = 0, choix;
+    caseDepart.colonne = 0 ;
+    char bidon;
+    char pieceTrouve;
+    ECHEC = 1; 
+    
+    while(ECHEC == 1)
+    {
+        /*
+        choix = -1;
         
-      printf("\n\n");
-  }
+        printf("Ou se trouve la piece que vous voulez deplacer? (ex : B2) : ");
+
+        scanf("%s", &choix);
+        switch(choix)
+        {
+            case 0:
+                printf("Au revoir et a bientot !");
+                system("clear");
+                break;
+            
+            case 1:
+                sauvegarde();
+                break;
+            
+            case 2:
+                ECHEC = 0;
+                changePiece = 1;
+                roque = 0;
+                break;
+            
+            case 3:
+                ECHEC = 0;
+                roque = 1;
+                jeRoque();
+                break;
+            
+            default:
+                scanf("%c%d", &caseDepart.charColonne, &caseDepart.ligne);
+                caseDepart.charColonne = toupper(caseDepart.charColonne);
+                
+                caseDepart.ligne--;      
+                verifCaseChoisie();
+                pieceTrouve = t[caseDepart.ligne][caseDepart.colonne] ;
+                pieceTrouve = toupper(pieceTrouve);
+                
+                printf("\n\n");
+          
+                printf("\n\n");
+                
+                printf("caseDepart.colonne = %d   pieceTrouve = %c  caseDepart.ligne = %d \n", caseDepart.colonne, pieceTrouve ,caseDepart.ligne);
+                
+                if(pieceTrouve == 'P')
+                {
+                    deplacementPion();
+                }
+                else if(pieceTrouve == 'C')
+                {
+                    deplacementCavalier();
+                }
+                else if(pieceTrouve == 'Q' || pieceTrouve == 'F' || pieceTrouve == 'T')
+                {
+                    deplacementReineFouTour();
+                }
+                else if(pieceTrouve == 'K')
+                {
+                    deplacementRoi();
+                }
+                break;
+            }
+        */
+        ECHEC = 0;
+        bidon = getchar();
+        printf("Ou se trouve la piece que vous voulez deplacer ? ( ex: B2) : ");  
+        scanf("%c%d", &caseDepart.charColonne, &caseDepart.ligne);
+        caseDepart.charColonne = toupper(caseDepart.charColonne);
+        
+        caseDepart.ligne--;      
+        verifCaseChoisie();
+        pieceTrouve = t[caseDepart.ligne][caseDepart.colonne] ;
+        pieceTrouve = toupper(pieceTrouve);
+        
+        printf("\n\n");
+    }
   
-  printf("\n\n");
-  
-  printf("caseDepart.colonne = %d   pieceTrouve = %c  caseDepart.ligne = %d \n", caseDepart.colonne, pieceTrouve ,caseDepart.ligne);
- 
-  if(pieceTrouve == 'P')
+    printf("\n\n");
+    
+    printf("caseDepart.colonne = %d   pieceTrouve = %c  caseDepart.ligne = %d \n", caseDepart.colonne, pieceTrouve ,caseDepart.ligne);
+    
+    if(pieceTrouve == 'P')
     {
         deplacementPion();
     }
-  else if(pieceTrouve == 'C')
+    else if(pieceTrouve == 'C')
     {
         deplacementCavalier();
     }
-  else if(pieceTrouve == 'Q' || pieceTrouve == 'F' || pieceTrouve == 'T')
+    else if(pieceTrouve == 'Q' || pieceTrouve == 'F' || pieceTrouve == 'T')
     {
         deplacementReineFouTour();
     }
-  else if(pieceTrouve == 'K')
+    else if(pieceTrouve == 'K')
     {
         deplacementRoi();
     }
@@ -396,7 +464,7 @@ void verifCaseChoisie()
     int i= 0,j = 0, flagEspace = 0;
 
     //-------pour trouver l'index de la LETTRE dans l'alphabet ----
-    for(i ; i < strlen(alphabet) ; i++)
+    for(i ; i < 9 ; i++)
     {
       if(alphabet[i] == caseDepart.charColonne)
       {
@@ -458,8 +526,6 @@ void deplacementPion()
             
             if(joueurActif == 1)
             {
-
-
                 if(    ((caseArrivee.ligne == caseDepart.ligne-1 && caseArrivee.colonne == caseDepart.colonne && t[caseArrivee.ligne][caseArrivee.colonne] != ' ')) ||
                        ((caseArrivee.ligne == caseDepart.ligne-2 && caseArrivee.colonne == caseDepart.colonne && t[caseArrivee.ligne][caseArrivee.colonne] != ' ' && t[caseDepart.ligne -1][caseArrivee.colonne] != ' ')) )
                 {
@@ -496,7 +562,7 @@ void deplacementPion()
                     }
                 else
                 {
-                    printf("Mouvement non valide, souvenez-vous, le pion se déplace d'une case en avant, veuillez recommencer !");
+                    printf("Mouvement non valide, souvenez-vous, le pion se déplace d'une case en avant, veuillez recommencer !\n");
                     ECHEC = 1;
                 }
             }
@@ -534,7 +600,7 @@ void deplacementPion()
                     }
                 else
                 {
-                    printf("Mouvement non valide, souvenez-vous, le pion se déplace d'une case en avant, veuillez recommencer !");
+                    printf("Mouvement non valide, souvenez-vous, le pion se déplace d'une case en avant, veuillez recommencer !\n");
                     ECHEC = 1;
                 }
             }
@@ -553,7 +619,7 @@ void deplacementPion()
             }
             else
             {
-            t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne]; 
+                t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne]; 
             }
             t[caseDepart.ligne][caseDepart.colonne] = ' ';
         }           
@@ -563,62 +629,67 @@ void deplacementPion()
 
 void verifDeplacementArrivee()
 {
+    printf("je suis dans verifDeplacementArrivee\n");
     char alphabet[10]= "ABCDEFGH";
     int i = 0, choix = 0;
     char bidon;
-    ECHEC =1; //echec est un variable globale
     RoiBlancEnECHEC = 0;
     RoiNoireEnECHEC = 0;
-    
+    ECHEC = 1;//-------------- FIX
     changementDePiece();
+    //ECHEC =1;//-------------- FIX  
     
-    while(ECHEC == 1) 
+    if(roque == 0)
     {
-        ECHEC = 0;
-        mauvaiseSaisi = 1;
-        while(mauvaiseSaisi == 1)
+        while(ECHEC == 1) 
         {
-            mauvaiseSaisi = 0;
-            printf("Où voulez-vous la déplacer? (ex : C9) : ");
-            bidon = getchar();
-            scanf("%c%d", &caseArrivee.charColonne, &caseArrivee.ligne);
-            caseArrivee.charColonne = toupper(caseArrivee.charColonne);
-            testMauvaiseSaisi();
-        }
-        caseArrivee.ligne--; //pour que ça corresponde au tableau
-
-        // test + test associé
-        
-        //-------pour trouver l'index de la LETTRE dans l'alphabet ----
-        for(i ; i < strlen(alphabet) ; i++)
-        {
-            if(alphabet[i] == caseArrivee.charColonne)
+            ECHEC = 0;
+            mauvaiseSaisi = 1;
+            while(mauvaiseSaisi == 1)
             {
-                caseArrivee.colonne = i;
+                mauvaiseSaisi = 0;
+                printf("Où voulez-vous la déplacer? (ex : C9) : ");
+                bidon = getchar();
+                scanf("%c%d", &caseArrivee.charColonne, &caseArrivee.ligne);
+                caseArrivee.charColonne = toupper(caseArrivee.charColonne);
+                testMauvaiseSaisi();
             }
-        }
-        /*
-        
-        //-------pour vérifier si la colonne et la ligne existe ----
-        if((caseArrivee.colonne < 0) || (caseArrivee.colonne > 7) || (caseArrivee.ligne < 0) || (caseArrivee.ligne > 7))
-        {
-            printf("CaseArrivée.ligne = %d    caseArrivee.colonne = %d", caseArrivee.ligne, caseArrivee.colonne);
-            printf("Mauvaise saisie ! A1 est la première case, H8 est la dernière, Veuillez recommencer \n");
-            ECHEC = 1 ;
-        }
-        
-        */
-        //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
-        for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
-        {
-            if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
+            caseArrivee.ligne--; //pour que ça corresponde au tableau
+    
+            // test + test associé
+            
+            //-------pour trouver l'index de la LETTRE dans l'alphabet ----
+            for(i ; i < strlen(alphabet) ; i++)
             {
-                printf("Une de vos pièces est déjà sur la case %c%d\n", 
-                caseArrivee.charColonne, caseArrivee.ligne + 1);
-                ECHEC = 1;
+                if(alphabet[i] == caseArrivee.charColonne)
+                {
+                    caseArrivee.colonne = i;
+                }
+            }
+            /*
+            
+            //-------pour vérifier si la colonne et la ligne existe ----
+            if((caseArrivee.colonne < 0) || (caseArrivee.colonne > 7) || (caseArrivee.ligne < 0) || (caseArrivee.ligne > 7))
+            {
+                printf("CaseArrivée.ligne = %d    caseArrivee.colonne = %d", caseArrivee.ligne, caseArrivee.colonne);
+                printf("Mauvaise saisie ! A1 est la première case, H8 est la dernière, Veuillez recommencer \n");
+                ECHEC = 1 ;
+            }
+            
+            */
+            //---- Pour vérifier si une pièce du joueur se trouve déjà sur la case d'arrivée
+            for(i = 0 ; i < strlen(piecesDuJoueurActif) ; i++)
+            {
+                if(piecesDuJoueurActif[i] == t[caseArrivee.ligne][caseArrivee.colonne])
+                {
+                    printf("Une de vos pièces est déjà sur la case %c%d\n", 
+                    caseArrivee.charColonne, caseArrivee.ligne + 1);
+                    ECHEC = 1;
+                }
             }
         }
     }
+    
 }
 
 
@@ -626,7 +697,7 @@ void verifDeplacementArrivee()
 
 void verifEliminationPiece()
 {
-   // printf("--------------je suis entrée dans verifEliminationPiece, et ECHEC = %d\n",ECHEC );
+   printf("--------------je suis entrée dans verifEliminationPiece, et ECHEC = %d\n",ECHEC );
     
     if(joueurActif == 1)
     {
@@ -718,12 +789,13 @@ void deplacementCavalier()
 void deplacementRoi()
 {
     ECHEC = 1 ;
+    printf("Je suis dans déplacement roi\n");
     
-    while(ECHEC == 1)
+    while(ECHEC == 1 && roque == 0)
     {
-        ECHEC == 0 ;
+        ECHEC = 0 ;
         verifDeplacementArrivee();
-        if(changePiece == 0)
+        if(changePiece == 0 && roque == 0)
         {
             if((caseArrivee.ligne == caseDepart.ligne-1) && (caseArrivee.colonne == caseDepart.colonne)  ||
                (caseArrivee.ligne == caseDepart.ligne-1) && (caseArrivee.colonne == caseDepart.colonne+1)||
@@ -751,15 +823,15 @@ void deplacementRoi()
 
     }
     
-   if(ECHEC == 0 && changePiece == 0)
+   if(ECHEC == 0 && changePiece == 0 && roque == 0)
    {
         if(joueurActif == 1)
         {
-            pasTouchayK1 = 0;
+            pasTouchayK1 = 0; //roqueJ1 = 2;
         }
         else if(joueurActif == 2)
         {
-            pasTouchayK2 = 0;
+            pasTouchayK2 = 0; // roqueJ2 = 2;
         }
         
         t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];         //je deplace la piece
@@ -776,12 +848,13 @@ void deplacementReineFouTour()
     char pieceChoisie = toupper(t[i][j]);
     int mouvementLicite = 0;
     
-    while(ECHEC == 1)
+    while(ECHEC == 1 && roque == 0)
     {
+        printf("je rentre dans le while ------ ECHEC = %d\n", ECHEC);
         ECHEC = 0;
         verifDeplacementArrivee();
         
-        if(changePiece == 0)
+        if(changePiece == 0 && roque == 0)
         {
             mouvementLicite = 0;
             //printf("----- testDiagonaleHG\n");
@@ -859,22 +932,22 @@ void deplacementReineFouTour()
         {
             if(caseDepart.ligne == 7 && caseDepart.colonne == 7)
             {
-                pasTouchayTP1 = 0;
+                pasTouchayTP1 = 0; // roqueJ1++;
             }
             else if(caseDepart.ligne == 7 && caseDepart.colonne == 0)
             {
-                pasTouchayTG1 = 0;
+                pasTouchayTG1 = 0; // roqueJ1++;
             }
         }
         else if(joueurActif == 2 && pieceChoisie == 'T')
         {
             if(caseDepart.ligne == 0 && caseDepart.colonne == 7)
             {
-                pasTouchayTP2 = 0;
+                pasTouchayTP2 = 0; // roqueJ2++;
             }
             else if(caseDepart.ligne == 0 && caseDepart.colonne == 0)
             {
-                pasTouchayTG2 = 0;
+                pasTouchayTG2 = 0; // roqueJ2++;
             }
         }
         
@@ -887,54 +960,74 @@ void deplacementReineFouTour()
 //-------------------------- Module changementDePiece -----------------------//
 void changementDePiece()
 {
-    //printf("---------------je suis entré dans la méthode changementDePiece\n");
+    printf("je suis entré dans la méthode changementDePiece\n");
     changePiece = 0;
     char pieceChoisie = toupper(t[caseDepart.ligne][caseDepart.colonne]);
     int choix;
-    printf("---------------------------------\n");
-    printf("--  1- Déplacer la piece       --\n");
-    printf("--  2- Choisir une autre piece --\n");
-    if(joueurActif == 1  && (pieceChoisie == 'T' || pieceChoisie == 'K'))
-    {
-        if(pasTouchayK1)
+    //ECHEC = 1;---------------------------------- FIX
+    
+    //while(ECHEC == 1)---------------------------------- FIX
+    //{---------------------------------- FIX
+        choix = -1;
+        printf("---------------------------------\n");
+        printf("--  1- Déplacer la piece       --\n");
+        printf("--  2- Choisir une autre piece --\n");
+        if(joueurActif == 1  && (pieceChoisie == 'T' || pieceChoisie == 'K'))
         {
-            if((pasTouchayTP1 && t[7][5] == ' ' && t[7][6] == ' ')
-            || (pasTouchayTG1 && t[7][1] == ' ' && t[7][2] == ' ' && t[7][3] == ' '))
+            if(pasTouchayK1 /*roqueJ1 < 2*/)
             {
-                printf("--  3- Faire un roque          --\n");
+                if((pasTouchayTP1 && t[7][5] == ' ' && t[7][6] == ' ')
+                || (pasTouchayTG1 && t[7][1] == ' ' && t[7][2] == ' ' && t[7][3] == ' '))
+                {
+                    printf("--  3- Faire un roque          --\n");
+                }
             }
         }
-    }
-    else if(joueurActif == 2  && (pieceChoisie == 'T' || pieceChoisie == 'K'))
-    {
-        if(pasTouchayK2)
+        else if(joueurActif == 2  && (pieceChoisie == 'T' || pieceChoisie == 'K'))
         {
-            if((pasTouchayTP2 && t[0][5] == ' ' && t[0][6] == ' ')
-            || (pasTouchayTG2 && t[0][1] == ' ' && t[0][2] == ' ' && t[0][3] == ' '))
+            if(pasTouchayK2 /*roqueJ2 < 2*/)
             {
-                printf("--  3- Faire un roque          --\n");
+                if((pasTouchayTP2 && t[0][5] == ' ' && t[0][6] == ' ')
+                || (pasTouchayTG2 && t[0][1] == ' ' && t[0][2] == ' ' && t[0][3] == ' '))
+                {
+                    printf("--  3- Faire un roque          --\n");
+                }
             }
         }
-    }
-    
-    printf("---------------------------------\n");
-    scanf("%d", &choix);
-    
-    switch(choix)
-    {
-        case 1:
-        break;
         
-        case 2:
-            ECHEC = 0;
-            changePiece = 1;
-        break;
+        printf("---------------------------------\n");
         
-        case 3:
-            ECHEC = 0;
-            jeRoque();
-        break;
-    }
+        while(choix != 1 && choix != 2 && choix !=3)
+        {
+            printf("Choix : ");
+            scanf("%d", &choix);
+            switch(choix)
+            {
+                case 1:
+                    //ECHEC = 0; ---------------------------------- FIX
+                    roque = 0;
+                break;
+                
+                case 2:
+                    ECHEC = 0;
+                    changePiece = 1;
+                    roque = 0;
+                break;
+                
+                case 3:
+                    ECHEC = 0;
+                    roque = 1;
+                    jeRoque();
+                break;
+                
+                default:
+                    printf("Erreur de saisie, veuillez recommencer\n");
+                    break;
+            }
+        }
+    //}---------------------------------- FIX
+    
+    
 }
 
 //---------------------------- Test Diagonales ---------------------------//
@@ -1114,6 +1207,8 @@ void testRangeesColonnes()
 //----------------------- Module de vérication de l'ECHEC au ROI --------------------------
 void testSiEchec()
 {   
+    //printf("je rentre dans testSiEchec() avec ECHEC = %d\n", ECHEC);
+    
     RoiBlancEnECHEC = 0;
     RoiNoireEnECHEC = 0;
     int i, j;
@@ -1121,7 +1216,7 @@ void testSiEchec()
     /* je deplace la piece pour tester si echec*/
     t[caseArrivee.ligne][caseArrivee.colonne] = t[caseDepart.ligne][caseDepart.colonne];
     t[caseDepart.ligne][caseDepart.colonne] = ' ';
-
+    
     /* je parcours le tableau pour tester chaque piece*/
     for(i = 0 ; i < 8 ; i++)
     {
@@ -1163,8 +1258,8 @@ void testSiEchec()
                    ((i+ 1 < 8 && i+ 1 >=0) && (j- 2 < 8 && j- 2 >= 0 ) && (t[i + 1][j - 2] == 'K')) ||
                    ((i+ 1 < 8 && i+ 1 >=0) && (j+ 2 < 8 && j+ 2 >= 0 ) && (t[i + 1][j + 2] == 'K')))
                 {
-                    printf("c\n");
-                    affichageEchecRoiBlanc();
+                    if(joueurActif != 1 && flagTestSiEchecEtMat != 1)
+                        affichageEchecRoiBlanc();
                 }
             }
             else if(t[i][j] == 'C')
@@ -1178,7 +1273,8 @@ void testSiEchec()
                    ((i+ 1 < 8 && i+ 1 >=0) && (j- 2 < 8 && j- 2 >= 0 ) && (t[i + 1][j - 2] == 'k')) ||
                    ((i+ 1 < 8 && i+ 1 >=0) && (j+ 2 < 8 && j+ 2 >= 0 ) && (t[i + 1][j + 2] == 'k')))
                 {
-                    affichageEchecRoiNoire();
+                    if(joueurActif != 2 && flagTestSiEchecEtMat != 1)
+                        affichageEchecRoiNoire();
                 }    
             }
             else if(t[i][j] == 'f' || t[i][j] == 'F')
@@ -1208,11 +1304,16 @@ void testSiEchec()
     t[caseArrivee.ligne][caseArrivee.colonne] = ' ';
     
     
-    if((joueurActif == 1 && RoiBlancEnECHEC == 1) || (joueurActif == 2 && RoiNoireEnECHEC ==1)) 
+    if(((joueurActif == 1 && RoiBlancEnECHEC == 1) || (joueurActif == 2 && RoiNoireEnECHEC ==1)) && flagTestSiEchecEtMat == 0) 
     {
         ECHEC = 1 ;
         printf(" Déplacement impossible, il met votre Roi en ECHEC ! Veuillez recommencer\n ");
     }
+    
+    if(flagTestSiEchecEtMat == 1)//pour ignorer les erreurs dans le cas du test pour l'échec et mat
+        ECHEC = 0;
+    
+    //printf("je SORS de testSiEchec() avec ECHEC = %d\n", ECHEC);
 }
 
 void affichageEchecRoiBlanc()
@@ -1488,7 +1589,7 @@ void testDiagoHG(int i, int j)
                 piecePercute = 1;
             }
             else
-            {}
+            {            }
             l--;
             c--;
         }
@@ -1640,6 +1741,7 @@ void testDiagoBD(int i, int j)
 //----------------------- Module de vérication de l'ECHEC ET MAT au ROI --------------------------//
 void testSiEchecEtMat()
 {
+    //printf("je rentre dans testSiEchecEtMat() avec ECHEC = %d\n", ECHEC);
         /*je sauvegarde les "vrai" caseDepart et caseArrivee*/
     sauvegardeCaseDepart.ligne = caseDepart.ligne;
     sauvegardeCaseDepart.colonne = caseDepart.colonne;
@@ -1648,171 +1750,617 @@ void testSiEchecEtMat()
     sauvegardeCaseArrivee.colonne = caseArrivee.colonne;
     
     flagTestSiEchecEtMat = 1;
-    int i,j,l;
-    int roiNoireSauve = 0;
-    int roiBlancSauve = 0;
-    echecEtMatRoiBlanc = 1;
-    echecEtMatRoiNoir = 1;
+    int i,j,k,l,m,n,o,p;
+    int roiNoireSauve = 0 ;
+    int roiBlancSauve = 0 ;
+    
+    if(joueurActif == 2)
+    {
+        echecEtMatRoiBlanc = 1;
+        echecEtMatRoiNoir = 0;
+    }
+    else if(joueurActif == 1)
+    {
+        echecEtMatRoiBlanc = 0;
+        echecEtMatRoiNoir = 1;
+    }
  
     
-    if(joueurActif == 1) //si c'est le joueurBlanc, c'est les pieces noire qui doivent sauver le roi
+    for(i = 0 ; i < 8 ; i++)
     {
-        for(i = 0 ; i < 8 ; i++)
-        {
-            for(j = 0 ; j < 8 ; j++)//je parcours tout le tableau à la recherche des pieces noires
-            {   
-                roiNoireSauve = 0;
-                caseDepart.ligne = i;
-                caseDepart.colonne = j;
-                if(t[i][j] == 'c') 
+        for(j = 0 ; j < 8 ; j++)//je parcours tout le tableau à la recherche des pieces
+        {   
+            roiNoireSauve = 0;
+            roiBlancSauve = 0;
+            caseDepart.ligne = i;
+            caseDepart.colonne = j;
+            if((t[i][j] == 'c' && joueurActif == 1) || (t[i][j] == 'C' && joueurActif == 2))
+            {
+
+                printf("Cavalier en %d %d\n", i, j);
+                caseArrivee.ligne = caseDepart.ligne -2;
+                caseArrivee.colonne = caseDepart.colonne -1;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
                 {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 1 \n");
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
+                caseArrivee.ligne = caseDepart.ligne -2;
+                caseArrivee.colonne = caseDepart.colonne +1;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 2 \n");
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
                     
-                    printf("j'ai trouvé un cavalier\n");
+                caseArrivee.ligne = caseDepart.ligne -1;
+                caseArrivee.colonne = caseDepart.colonne -2;
+                
+                runTestEchecMatElimination();
 
-                    caseArrivee.ligne = caseDepart.ligne -2;
-                    caseArrivee.colonne = caseDepart.colonne -1;
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 3 \n");
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
+                  
+                caseArrivee.ligne = caseDepart.ligne -1;
+                caseArrivee.colonne = caseDepart.colonne +2;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 4 \n");
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
+
+                caseArrivee.ligne = caseDepart.ligne +2;
+                caseArrivee.colonne = caseDepart.colonne -1;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 5 \n");
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
+                
+                caseArrivee.ligne = caseDepart.ligne +2;
+                caseArrivee.colonne = caseDepart.colonne +1;
+                
+                printf("avant -> RoiNoireEnECHEC : %d \n", RoiNoireEnECHEC);
+                runTestEchecMatElimination();
+                printf("après -> RoiNoireEnECHEC : %d \n", RoiNoireEnECHEC);                
+                
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 6 %c\n", t[caseArrivee.ligne][caseArrivee.colonne]);
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
+                      
+                caseArrivee.ligne = caseDepart.ligne +1;
+                caseArrivee.colonne = caseDepart.colonne -2;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 7 %c\n", t[caseArrivee.ligne][caseArrivee.colonne]);
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
+                  
+                caseArrivee.ligne = caseDepart.ligne +1;
+                caseArrivee.colonne = caseDepart.colonne +2;
+                
+                runTestEchecMatElimination();
+                
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                {
+                    roiNoireSauve = 1;
+                    printf("C - Cas 8 %c\n", t[caseArrivee.ligne][caseArrivee.colonne]);
+                }
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+
+                
+                if(joueurActif == 1 && roiNoireSauve == 1)
+                 {
+                     echecEtMatRoiNoir = 0;
+                     printf("SAUVE PAR CAVALIER\n");
+                 }
+                else if(joueurActif == 2 && roiBlancSauve == 1)
+                    echecEtMatRoiBlanc = 0;
+                 
+                 
+                caseDepart.ligne = sauvegardeCaseDepart.ligne;
+                caseDepart.colonne = sauvegardeCaseDepart.colonne;
+
+                caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
+                caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
+            }
+            
+            if(t[i][j] == 'p' && joueurActif == 1)
+            {
+                if(i == 1 && t[caseDepart.ligne+1][caseDepart.colonne] == ' ' && t[caseDepart.ligne +2][caseDepart.colonne] == ' ') //avance de 2 cases pour le pion
+                {
+                    caseArrivee.ligne = caseDepart.ligne +2;
+                    caseArrivee.colonne = caseDepart.colonne;
                     
-                    runTestEchecMatElimination();
-
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-
-
-                    caseArrivee.ligne = caseDepart.ligne -2;
-                    caseArrivee.colonne = caseDepart.colonne +1;
+                    testSiEchec();
                     
-                    runTestEchecMatElimination();
-
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
                         
-                    caseArrivee.ligne = caseDepart.ligne -1;
-                    caseArrivee.colonne = caseDepart.colonne -2;
-                    
-                    runTestEchecMatElimination();
-
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-                      
-                    caseArrivee.ligne = caseDepart.ligne -1;
-                    caseArrivee.colonne = caseDepart.colonne +2;
-                    
-                    runTestEchecMatElimination();
-
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-
-                    caseArrivee.ligne = caseDepart.ligne +2;
-                    caseArrivee.colonne = caseDepart.colonne -1;
-                    
-                    runTestEchecMatElimination();
-
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-                    
-                    caseArrivee.ligne = caseDepart.ligne +2;
-                    caseArrivee.colonne = caseDepart.colonne +1;
-                    
-                    runTestEchecMatElimination();
-
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-                          
-                    caseArrivee.ligne = caseDepart.ligne +1;
-                    caseArrivee.colonne = caseDepart.colonne -2;
-                    
-                    runTestEchecMatElimination();
-
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-                      
-                    caseArrivee.ligne = caseDepart.ligne +1;
-                    caseArrivee.colonne = caseDepart.colonne +2;
-                    
-                    runTestEchecMatElimination();
-                    
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-                    
-                    
-                    if(roiNoireSauve == 1)
-                     {
-                        echecEtMatRoiNoir = 0;
-                        printf("le roi noir peut être sauvé par un cavalier\n");
-                     }
-                     
-                    caseDepart.ligne = sauvegardeCaseDepart.ligne;
-                    caseDepart.colonne = sauvegardeCaseDepart.colonne;
-    
-                    caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
-                    caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
                 }
                 
-                if(t[i][j] == 'p')
+                if(t[caseDepart.ligne +1][caseDepart.colonne] == ' ')
                 {
-                    printf("j'ai trouvé un pion\n");
-                    if(i == 1 && t[caseDepart.ligne+1][caseDepart.colonne] == ' ' && t[caseDepart.ligne +2][caseDepart.colonne] == ' ') //avance de 2 cases pour le pion
+                    caseArrivee.ligne = caseDepart.ligne +1;
+                    caseArrivee.colonne = caseDepart.colonne;
+                    
+                    testSiEchec();
+                    if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                         roiNoireSauve = 1;
+                     else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                         roiBlancSauve = 1;
+                }
+                
+                caseArrivee.ligne = caseDepart.ligne +1;
+                caseArrivee.colonne = caseDepart.colonne +1;
+                
+                runTestEchecMatPion();
+                
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1; 
+    
+            
+                caseArrivee.ligne = caseDepart.ligne +1;
+                caseArrivee.colonne = caseDepart.colonne -1;
+                
+                runTestEchecMatPion();
+                
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;
+                    
+                    
+                if(joueurActif == 1 && roiNoireSauve == 1)
+                    echecEtMatRoiNoir = 0;
+                else if(joueurActif == 2 && roiBlancSauve == 1)
+                    echecEtMatRoiBlanc = 0;
+
+                 
+                caseDepart.ligne = sauvegardeCaseDepart.ligne;
+                caseDepart.colonne = sauvegardeCaseDepart.colonne;
+
+                caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
+                caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
+            }
+            
+            
+            
+            if(t[i][j] == 'P' && joueurActif == 2)
+            {
+                if(i == 1 && t[caseDepart.ligne-1][caseDepart.colonne] == ' ' && t[caseDepart.ligne -2][caseDepart.colonne] == ' ') //avance de 2 cases pour le pion
+                {
+                    caseArrivee.ligne = caseDepart.ligne -2;
+                    caseArrivee.colonne = caseDepart.colonne;
+                    
+                    testSiEchec();
+                    
+                    if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                        roiNoireSauve = 1;
+                    else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                        roiBlancSauve = 1;
+                        
+                }
+                
+                if(t[caseDepart.ligne -1][caseDepart.colonne] == ' ')
+                {
+                    caseArrivee.ligne = caseDepart.ligne -1;
+                    caseArrivee.colonne = caseDepart.colonne;
+                    
+                    testSiEchec();
+                    if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                        roiNoireSauve = 1;
+                    else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                        roiBlancSauve = 1;
+                }
+                
+                caseArrivee.ligne = caseDepart.ligne -1;
+                caseArrivee.colonne = caseDepart.colonne +1;
+                
+                runTestEchecMatPion();
+                
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1; 
+    
+            
+                caseArrivee.ligne = caseDepart.ligne -1;
+                caseArrivee.colonne = caseDepart.colonne -1;
+                
+                runTestEchecMatPion();
+                
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1; 
+                    
+                    
+                if(joueurActif == 1 && roiNoireSauve == 1)
+                    echecEtMatRoiNoir = 0;
+                else if(joueurActif == 2 && roiBlancSauve == 1)
+                    echecEtMatRoiBlanc = 0;
+
+                 
+                caseDepart.ligne = sauvegardeCaseDepart.ligne;
+                caseDepart.colonne = sauvegardeCaseDepart.colonne;
+
+                caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
+                caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
+            }
+            
+            if((t[i][j] == 'k' && joueurActif == 1 )|| (t[i][j] == 'K' && joueurActif == 2))
+            {
+                caseArrivee.ligne = caseDepart.ligne -1;
+                caseArrivee.colonne = caseDepart.colonne -1;
+                
+               runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1; 
+                    
+                caseArrivee.ligne = caseDepart.ligne -1;
+                caseArrivee.colonne = caseDepart.colonne;
+                
+               runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1; 
+                
+                caseArrivee.ligne = caseDepart.ligne -1;
+                caseArrivee.colonne = caseDepart.colonne +1;
+                
+               runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;                    
+                
+                caseArrivee.ligne = caseDepart.ligne;
+                caseArrivee.colonne = caseDepart.colonne+1;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;                   
+                
+                caseArrivee.ligne = caseDepart.ligne +1;
+                caseArrivee.colonne = caseDepart.colonne +1;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;                  
+                
+                caseArrivee.ligne = caseDepart.ligne +1;
+                caseArrivee.colonne = caseDepart.colonne;
+                
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;                
+                
+                caseArrivee.ligne = caseDepart.ligne +1;
+                caseArrivee.colonne = caseDepart.colonne -1;
+
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;                      
+                
+                caseArrivee.ligne = caseDepart.ligne;
+                caseArrivee.colonne = caseDepart.colonne -1;
+
+                runTestEchecMatElimination();
+
+                if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                    roiNoireSauve = 1;
+                else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                    roiBlancSauve = 1;  
+                    
+                 
+                 if(joueurActif == 1 && roiNoireSauve == 1)
+                 {
+                     echecEtMatRoiNoir = 0;
+                     printf("le roi noir peut se sauver lui-même\n");
+                 }
+                 else if(joueurActif == 2 && roiBlancSauve == 1)
+                 {
+                     echecEtMatRoiBlanc = 0;
+                     printf("le roi blanc peut se sauver lui-même\n");
+                 }
+                 
+                caseDepart.ligne = sauvegardeCaseDepart.ligne;
+                caseDepart.colonne = sauvegardeCaseDepart.colonne;
+
+                caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
+                caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
+            }
+            
+            
+           if(((t[i][j] == 't' || t[i][j] == 'q') && joueurActif == 1) || ((t[i][j] == 'T' || t[i][j] == 'Q') && joueurActif == 2))
+           {
+                percut = 0;
+                /* je check en haut */
+                for(k= i ; k >= 0 ; k--)
+                {
+                    if(percut == 0 && (k != i))
                     {
-                        printf("2 cases pion\n");
-                        caseArrivee.ligne = caseDepart.ligne +2;
+                        caseArrivee.ligne = k;
                         caseArrivee.colonne = caseDepart.colonne;
                         
-                        testSiEchec();
+                        runTestEchecMatElimination();
                         
-                        if(RoiNoireEnECHEC == 0)
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
                             roiNoireSauve = 1;
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                            roiBlancSauve = 1;
+                    }
+                }
+                percut = 0; //je remet percut à 0 pour les autres tests
+                
+                /* je check en bas */
+                for(l= i ; l < 8 ; l++)
+                {
+                    if(percut == 0 && (l != i))
+                    {
+                        caseArrivee.ligne = l;
+                        caseArrivee.colonne = caseDepart.colonne;
+                        
+                        runTestEchecMatElimination();
+                        
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                            roiNoireSauve = 1;
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                            roiBlancSauve = 1;
+
                             
                     }
-                    
-                    if(t[caseDepart.ligne +1][caseDepart.colonne] == ' ')
-                    {
-                        caseArrivee.ligne = caseDepart.ligne +1;
-                        caseArrivee.colonne = caseDepart.colonne;
-                        
-                        testSiEchec();
-                        if(RoiNoireEnECHEC == 0)
-                            roiNoireSauve = 1;
-                    }
-                    
-                    caseArrivee.ligne = caseDepart.ligne +1;
-                    caseArrivee.colonne = caseDepart.colonne +1;
-                    
-                    runTestEchecMatPion();
-                    
-                    if(RoiNoireEnECHEC == 0)
-                         roiNoireSauve = 1; 
-        
-                
-                    caseArrivee.ligne = caseDepart.ligne +1;
-                    caseArrivee.colonne = caseDepart.colonne -1;
-                    
-                    runTestEchecMatPion();
-                    
-                    if(RoiNoireEnECHEC == 0)
-                        roiNoireSauve = 1;
-                        
-                        
-                    if(roiNoireSauve == 1)
-                        echecEtMatRoiNoir = 0;
-
-                     
-                    caseDepart.ligne = sauvegardeCaseDepart.ligne;
-                    caseDepart.colonne = sauvegardeCaseDepart.colonne;
-    
-                    caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
-                    caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
                 }
+                percut = 0;
                 
+                /* je check a droite */
+                for(m= j ; m < 8 ; m++)
+                {
+                    if(percut == 0 && (m != j))
+                    {
+                        caseArrivee.ligne = caseDepart.ligne;
+                        caseArrivee.colonne = m;
+                        
+                        runTestEchecMatElimination();
+                        
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                            roiNoireSauve = 1;
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                            roiBlancSauve = 1;
+                    }
+                }
+                percut = 0;
+                
+                /* je check a gauche */
+                for(n= j ; n >= 0 ; n--)
+                {
+                    if(percut == 0 && (n != j))
+                    {
+                        caseArrivee.ligne = caseDepart.ligne;
+                        caseArrivee.colonne = n;
+                        
+                        runTestEchecMatElimination();
+                        
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                            roiNoireSauve = 1;
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                            roiBlancSauve = 1;
+                    }  
+                }
+                percut = 0;
+                
+                if(joueurActif == 1 && roiNoireSauve == 1)
+                 {
+                     echecEtMatRoiNoir = 0;
+                     printf("une tour ou la reine peut sauver le roi\n");
+                 }
+                 else if(joueurActif == 2 && roiBlancSauve == 1)
+                 {
+                     echecEtMatRoiBlanc = 0;
+                     printf("une tour ou la reine peut sauver le roi\n");
+                 }
+                 
+                caseDepart.ligne = sauvegardeCaseDepart.ligne;
+                caseDepart.colonne = sauvegardeCaseDepart.colonne;
+
+                caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
+                caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
             }
+            
+            
+            if(((t[i][j] == 'f' || t[i][j] == 'q') && joueurActif == 1) || ((t[i][j] == 'F' || t[i][j] == 'Q') && joueurActif == 2))
+            {  
+                percut = 0;
+                
+                /* je check HG */
+                for(o= i, p=j ; o >= 0, p >= 0 ; o-- , p--)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        caseArrivee.ligne = o;
+                        caseArrivee.colonne = p;
+                        
+                        runTestEchecMatElimination();
+                        
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                        {
+                            roiNoireSauve = 1;
+                            printf("HG noir (partir de %d %d) a partir de %c il le sauve à la ligne : %d et colonne %d\n", i,j,t[i][j], o, p);
+                        }
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                        {
+                            roiBlancSauve = 1;
+                            printf("HG blanc\n");
+                        }
+                    }
+                }
+                percut = 0; //je remet percut à 0 pour les autres tests
+                
+                /* je check HD */
+                for(o= i, p=j ; o >= 0, p < 8 ; o-- , p++)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        caseArrivee.ligne = o;
+                        caseArrivee.colonne = p;
+                        
+                        runTestEchecMatElimination();
+                        
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                        {
+                            roiNoireSauve = 1;
+                            printf("HD noir\n");
+                        }
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                        {
+                            roiBlancSauve = 1;
+                            printf("HD blanc\n");
+                        }
+                    }
+                }
+                percut = 0;
+                
+                /* je check BD */
+                for(o= i, p=j ; o < 8, p < 8 ; o++ , p++)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        caseArrivee.ligne = o;
+                        caseArrivee.colonne = p;
+                        
+                        runTestEchecMatElimination();
+                        
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                        {
+                            roiNoireSauve = 1;
+                            printf("BD\n");
+                            printf("contenu : %c , ligne %d , colonne %d\n", t[o][p], o, p);
+                        }
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                        {
+                            roiBlancSauve = 1;
+                            printf("BD\n");
+                        }
+                    }
+                }
+                percut = 0;
+                
+                /* je check BG */
+                for(o= i, p=j ; o < 8, p >= 0 ; o++ , p--)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        caseArrivee.ligne = o;
+                        caseArrivee.colonne = p;
+                        
+                        runTestEchecMatElimination();
+                        
+                        if(joueurActif == 1 && RoiNoireEnECHEC == 0)
+                        {
+                            roiNoireSauve = 1;
+                            printf("BG\n");
+                        }
+                        else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
+                        {
+                            roiBlancSauve = 1;
+                            printf("BG\n");
+                        }
+                    }
+                }
+                percut = 0;
+                
+                if(joueurActif == 1 && roiNoireSauve == 1)
+                    echecEtMatRoiNoir = 0;
+                else if(joueurActif == 2 && roiBlancSauve == 1)
+                     echecEtMatRoiBlanc = 0;
+                
+                 
+                caseDepart.ligne = sauvegardeCaseDepart.ligne;
+                caseDepart.colonne = sauvegardeCaseDepart.colonne;
+
+                caseArrivee.ligne = sauvegardeCaseArrivee.ligne;
+                caseArrivee.colonne = sauvegardeCaseArrivee.colonne;
+            }
+            
         }
+        
     }
     
+
+    
+    /* ---------- une fois que tu auras enlever les printf("le roi noir peut se sauver lui même, tu peux rempalcer tout les if(roiNoirsSauve == 1) par une seule ci-dessous." -----------*/    
     //if(roiNoireSauve == 0)
     //    echecEtMatRoiNoir = 1;
         
     flagTestSiEchecEtMat = 0 ;
-
     
+    printf("je SORS de testSiEchecEtMat() avec ECHEC = %d\n", ECHEC);
+
 }
 
 void runTestEchecMatElimination()
@@ -1830,15 +2378,23 @@ void runTestEchecMatElimination()
         {
             /* sauvegarde de la piece visé en cas d'élimination*/
           valeurCaseMange = t[caseArrivee.ligne][caseArrivee.colonne];
-        
+          
           testSiEchec(); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
-                      
            /* on replace la piece visé car si il y a élimination il la effacé*/
           t[caseArrivee.ligne][caseArrivee.colonne] = valeurCaseMange;
 
-        }  
+        }
+        if(t[caseArrivee.ligne][caseArrivee.colonne] == 't' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'f' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'c' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'k' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'q' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'p' )
+        {
+            percut = 1;
+        }
     }
-    else if(joueurActif == 2)//si c'est le joueur Noirn c'est les pieces blanches qui doivent sauver le roi
+    else if(joueurActif == 2)//si c'est le joueur Noir c'est les pieces blanches qui doivent sauver le roi
     {
         if(t[caseArrivee.ligne][caseArrivee.colonne] != 'T' &&
            t[caseArrivee.ligne][caseArrivee.colonne] != 'F' &&
@@ -1854,7 +2410,16 @@ void runTestEchecMatElimination()
                       
            /* on replace la piece visé car si il y a élimination il la effacé*/
           t[caseArrivee.ligne][caseArrivee.colonne] = valeurCaseMange;
-        }  
+        }
+        if(t[caseArrivee.ligne][caseArrivee.colonne] == 'T' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'F' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'C' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'K' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'Q' ||
+           t[caseArrivee.ligne][caseArrivee.colonne] == 'P' )
+        {
+            percut = 1;
+        }
     }
 
 }
@@ -1896,6 +2461,7 @@ void runTestEchecMatPion()
           t[caseArrivee.ligne][caseArrivee.colonne] = valeurCaseMange;
         }  
     }
+    
 
 }
 
@@ -1921,28 +2487,41 @@ void jeRoque()
             printf("--  2- Faire un petit roque    --\n");
             printf("--  3- Retour                  --\n");        
             printf("---------------------------------\n");
-            printf("choix : ");
        
-            scanf("%d", &choix);
-            
-            switch(choix)
+            while(choix != 1 && choix != 2 && choix != 3)
             {
-                case 1:
-                    t[7][2] = 'K';
-                    t[7][3] = 'T';                    
-                    break;
+                printf("choix : ");
+                scanf("%d", &choix);
+                switch(choix)
+                {
+                    case 1:
+                        t[7][2] = 'K';
+                        t[7][3] = 'T';
+                        t[7][0] = ' ';
+                        t[7][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK1 = 1;
+                        break;
+                        
+                    case 2: 
+                        t[7][6] = 'K';
+                        t[7][5] = 'T';
+                        t[7][7] = ' ';
+                        t[7][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK1 = 1;
+                        break;
                     
-                case 2: 
-                    t[7][6] = 'K';
-                    t[7][5] = 'T';                    
-                    break;
-                
-                case 3:
-                    break;
-                default:
-                    printf("Erreur de saisie, veuillez recommencer\n");
-                    break;
+                    case 3:
+                        ECHEC = 1;
+                        break;
+                        
+                    default:
+                        printf("Erreur de saisie, veuillez recommencer\n");
+                        break;
+                }
             }
+                
         }
         
         else if(pasTouchayK1 && pasTouchayTG1 && t[7][1] == ' ' && t[7][2] == ' ' && t[7][3] == ' ')
@@ -1951,23 +2530,32 @@ void jeRoque()
             printf("--  1- Faire un grand roque    --\n");
             printf("--  2- Retour                  --\n");        
             printf("---------------------------------\n");
-            printf("choix : ");
-       
-            scanf("%d", &choix);
-       
-            switch(choix)
+
+            while(choix != 1 && choix != 2)
             {
-                case 1:
-                    t[7][2] = 'K';
-                    t[7][3] = 'T';
-                    break;
-                    
-                case 2: 
-                  break;
-                default:
-                    printf("Erreur de saisie, veuillez recommencer\n");
-                    break;
+                printf("choix : ");
+                scanf("%d", &choix);
+                switch(choix)
+                {
+                    case 1:
+                        t[7][2] = 'K';
+                        t[7][3] = 'T';
+                        t[7][0] = ' ';
+                        t[7][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK1 = 1;
+                        break;
+                        
+                    case 2:
+                        ECHEC = 1;
+                        break;
+                      
+                    default:
+                        printf("Erreur de saisie, veuillez recommencer\n");
+                        break;
+                }
             }
+            
         }
         
         else if (pasTouchayK1 && pasTouchayTP1 && t[7][5] == ' ' && t[7][6] == ' ')
@@ -1976,22 +2564,32 @@ void jeRoque()
             printf("--  1- Faire un petit roque    --\n");
             printf("--  2- Retour                  --\n");        
             printf("---------------------------------\n");
-            printf("choix : ");
        
-            scanf("%d", &choix);
-       
-            switch(choix)
+            while(choix != 1 && choix != 2)
             {
-                case 1:
-                    t[7][6] = 'K';
-                    t[7][5] = 'T';
-                    break;
-                case 2: 
-                  break;
-                default:
-                    printf("Erreur de saisie, veuillez recommencer\n");
-                    break;
+                printf("choix : ");
+                scanf("%d", &choix);
+                switch(choix)
+                {
+                    case 1:
+                        t[7][6] = 'K';
+                        t[7][5] = 'T';
+                        t[7][7] = ' ';
+                        t[7][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK1 = 1;
+                        break;
+                        
+                    case 2:
+                        ECHEC = 1;
+                        break;
+                      
+                    default:
+                        printf("Erreur de saisie, veuillez recommencer\n");
+                        break;
+                }
             }
+            
         }
     }
     
@@ -2005,25 +2603,41 @@ void jeRoque()
             printf("--  2- Faire un petit roque    --\n");
             printf("--  3- Retour                  --\n");        
             printf("---------------------------------\n");
-            printf("choix : ");
        
-            scanf("%d", &choix);
-       
-            switch(choix)
+            while(choix != 1 && choix != 2 && choix != 3)
             {
-                case 1:
-                    t[0][2] = 'k';
-                    t[0][3] = 't';                 
-                break;
+                printf("choix : ");
+                scanf("%d", &choix);
+                switch(choix)
+                {
+                    case 1:
+                        t[0][2] = 'k';
+                        t[0][3] = 't';
+                        t[0][0] = ' ';
+                        t[0][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK2 = 1;
+                        break;
+                        
+                    case 2: 
+                        t[0][6] = 'k';
+                        t[0][5] = 't';
+                        t[0][7] = ' ';
+                        t[0][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK2 = 1;
+                        break;
                     
-                case 2: 
-                    t[0][6] = 'k';
-                    t[0][5] = 't'; 
-                break;
-                
-                case 3:
-                break;
+                    case 3:
+                        ECHEC = 1;
+                        break;
+                    
+                    default:
+                        printf("Erreur de saisie, veuillez recommencer\n");
+                        break;
+                }
             }
+                
         }
         
         else if(pasTouchayK2 && pasTouchayTG2 && t[0][1] == ' ' && t[0][2] == ' ' && t[0][3] == ' ' )
@@ -2032,20 +2646,32 @@ void jeRoque()
             printf("--  1- Faire un grand roque    --\n");
             printf("--  2- Retour                  --\n");        
             printf("---------------------------------\n");
-            printf("choix : ");
-       
-            scanf("%d", &choix);
-       
-            switch(choix)
+            
+            while(choix != 1 && choix != 2)
             {
-                case 1:
-                    t[0][2] = 'k';
-                    t[0][3] = 't';                        
-                break;
+                printf("choix : ");
+                scanf("%d", &choix);
+                switch(choix)
+                {
+                    case 1:
+                        t[0][2] = 'k';
+                        t[0][3] = 't';   
+                        t[0][0] = ' ';
+                        t[0][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK2 = 1;
+                        break;
+                        
+                    case 2:
+                        ECHEC = 1;
+                        break;
                     
-                case 2: 
-                break;
+                    default:
+                        printf("Erreur de saisie, veuillez recommencer\n");
+                        break;
+                }
             }
+            
         }
         
         else if(pasTouchayK2 && pasTouchayTP2 && t[0][5] == ' ' && t[0][6] == ' ')
@@ -2054,31 +2680,42 @@ void jeRoque()
             printf("--  1- Faire un petit roque    --\n");
             printf("--  2- Retour                  --\n");        
             printf("---------------------------------\n");
-            printf("choix : ");
-       
-            scanf("%d", &choix);
-       
-            switch(choix)
+        
+            while(choix != 1 && choix != 2)
             {
-                case 1:
-                    t[0][6] = 'k';
-                    t[0][5] = 't';                    
-                break;
+                printf("choix : ");
+                scanf("%d", &choix);
+                switch(choix)
+                {
+                    case 1:
+                        t[0][6] = 'k';
+                        t[0][5] = 't';
+                        t[0][7] = ' ';
+                        t[0][4] = ' ';
+                        ECHEC = 0;
+                        pasTouchayK2 = 1;
+                        break;
+                        
+                    case 2:
+                        ECHEC = 1;
+                        break;
                     
-                case 2: 
-                break;
+                    default:
+                        printf("Erreur de saisie, veuillez recommencer\n");
+                        break;
+                }
             }
+            
         }
     }    
 
 }
-/*
-//..........................Sauvegarde............................//
-// Ne pas oublier de faire un contrôle du nombre d'éléments à sauvegarder ou afficher. 
-// Sinon ça sert à rien...
 
-void sauvegarde()
-{
+//..........................Sauvegarde............................//
+
+
+
+/*{
 	int i;
 	struct etudiant eleve;
 	char NomFichier[100];
@@ -2099,9 +2736,12 @@ void sauvegarde()
 	
 	
 	---------------- pour notre programme -------------------
+	*/
+void sauvegarde()
+{	
 	int i,j;
 	FILE *f1;
-	char nomFichier[100];
+	char nomFichier[100], caseEnregistree;
 	
 	printf("Nom du fichier de sauvegarde : ");
 	scanf("%s",nomFichier);
@@ -2113,8 +2753,8 @@ void sauvegarde()
 	{
 	    for(j = 0 ; j < 8 ; j++)
 	    {
-	        char case = t[i][j];
-	        fprintf(f1,"%c",case);
+	        caseEnregistree = t[i][j];
+	        fprintf(f1,"%c",caseEnregistree);
 	    }
 	}
 	fclose(f1);
@@ -2123,12 +2763,10 @@ void sauvegarde()
 	
 	//au final on devrait se retrouver avec un fichier texte genre 1tcfqkfctpppppppp            PPPPTCQKT
 
-	
-	
 }
 
 //...........................Chargement...........................//
-
+/*
 void chargement()
 {
 	struct etudiant eleve;
@@ -2156,5 +2794,40 @@ void chargement()
 	fclose(f1);
 
 	printf("%d eleves enregistres dans ce fichier.\n",nbeleves);
+	
+	
 }
-*/
+    --------- Pour notre programme -------
+    */
+void chargement()
+{
+	int i, j, retour ;
+	char NomFichier[100], caseEnregistree;
+	FILE *f1;
+	
+	printf("Quel fichier voulez vous ouvrir? ");
+	scanf("%s", NomFichier);
+
+	f1 = fopen(NomFichier,"r");
+
+	while(! feof(f1))
+	{
+		retour = fscanf(f1,"%c", &caseEnregistree);
+        
+        for(i = 0 ; i < 8 ; i++)
+        {
+            for(j = 0 ; j < 8 ; j++)
+            {
+                if(retour != EOF)
+        		{
+        			t[i][j] = caseEnregistree;
+        		}
+            }
+        }
+		
+
+	}
+	fclose(f1);
+
+	printf("Chargé !");
+}
