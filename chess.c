@@ -1863,8 +1863,6 @@ void testDiagoBD(int i, int j)
 //----------------------- Module de vérication de l'ECHEC ET MAT au ROI --------------------------//
 void testSiEchecEtMat()
 {
-    //printf("je rentre dans testSiEchecEtMat() avec ECHEC = %d\n", ECHEC);
-        /*je sauvegarde les "vrai" caseDepart et caseArrivee*/
     sauvegardeCaseDepart.ligne = caseDepart.ligne;
     sauvegardeCaseDepart.colonne = caseDepart.colonne;
     
@@ -1898,23 +1896,16 @@ void testSiEchecEtMat()
             caseDepart.colonne = j;
             if((t[i][j] == 'c' && joueurActif == 1) || (t[i][j] == 'C' && joueurActif == 2))
             {
-
-                printf("Cavalier en %d %d\n", i, j);
                 caseArrivee.ligne = caseDepart.ligne -2;
                 caseArrivee.colonne = caseDepart.colonne -1;
                 
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 1 \n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
-                {    
                     roiBlancSauve = 1;
-                    printf("C - Cas 3\n");
-                }
 
                 caseArrivee.ligne = caseDepart.ligne -2;
                 caseArrivee.colonne = caseDepart.colonne +1;
@@ -1922,29 +1913,21 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 2 \n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;
 
-                    
                 caseArrivee.ligne = caseDepart.ligne -1;
                 caseArrivee.colonne = caseDepart.colonne -2;
                 
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 3 \n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
-                {    
                     roiBlancSauve = 1;
-                    printf("C - Cas 3\n");
-                }
 
                   
                 caseArrivee.ligne = caseDepart.ligne -1;
@@ -1953,10 +1936,7 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 4 \n");
-                }
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;
 
@@ -1967,10 +1947,8 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 5 \n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;
 
@@ -1981,10 +1959,7 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
                 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 6 %c\n", t[caseArrivee.ligne][caseArrivee.colonne]);
-                }
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;
 
@@ -1995,10 +1970,8 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 7 %c\n", t[caseArrivee.ligne][caseArrivee.colonne]);
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;
 
@@ -2009,24 +1982,18 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
                 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("C - Cas 8 %c\n", t[caseArrivee.ligne][caseArrivee.colonne]);
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;
 
                 
                 if(joueurActif == 1 && roiNoireSauve == 1)
-                 {
-                     echecEtMatRoiNoir = 0;
-                     printf("SAUVE PAR CAVALIER\n");
-                 }
+                    echecEtMatRoiNoir = 0;
+
                 else if(joueurActif == 2 && roiBlancSauve == 1)
-                {
                     echecEtMatRoiBlanc = 0;
-                    printf("SAUVE PAR CAVALIER\n");
-                }
+
                  
                  
                 caseDepart.ligne = sauvegardeCaseDepart.ligne;
@@ -2152,15 +2119,10 @@ void testSiEchecEtMat()
                     
                     
                 if(joueurActif == 1 && roiNoireSauve == 1)
-                {
                     echecEtMatRoiNoir = 0;
-                    printf("Sauvé par un pion\n");
-                }
                 else if(joueurActif == 2 && roiBlancSauve == 1)
-                {
                     echecEtMatRoiBlanc = 0;
-                    printf("sauvé par un pion\n");
-                }
+
 
                  
                 caseDepart.ligne = sauvegardeCaseDepart.ligne;
@@ -2178,10 +2140,8 @@ void testSiEchecEtMat()
                runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement HG le sauve\n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1; 
                     
@@ -2191,10 +2151,8 @@ void testSiEchecEtMat()
                runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement H le sauve\n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1; 
                 
@@ -2204,10 +2162,8 @@ void testSiEchecEtMat()
                runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement HD le sauve\n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;              
                 
@@ -2217,10 +2173,8 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement D le sauve\n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;                  
                 
@@ -2230,10 +2184,7 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement BD le sauve\n");
-                }
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;                
                 
@@ -2243,10 +2194,8 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement B le sauve\n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;            
                 
@@ -2256,10 +2205,8 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement BG le sauve\n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1;                   
                 
@@ -2269,23 +2216,17 @@ void testSiEchecEtMat()
                 runTestEchecMatElimination();
 
                 if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                {
                     roiNoireSauve = 1;
-                    printf("déplacement G le sauve\n");
-                }
+
                 else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
                     roiBlancSauve = 1; 
                  
                  if(joueurActif == 1 && roiNoireSauve == 1)
-                 {
                      echecEtMatRoiNoir = 0;
-                     printf("le roi noir peut se sauver lui-même\n");
-                 }
+
                  else if(joueurActif == 2 && roiBlancSauve == 1)
-                 {
                      echecEtMatRoiBlanc = 0;
-                     printf("le roi blanc peut se sauver lui-même\n");
-                 }
+
                  
                 caseDepart.ligne = sauvegardeCaseDepart.ligne;
                 caseDepart.colonne = sauvegardeCaseDepart.colonne;
@@ -2373,15 +2314,10 @@ void testSiEchecEtMat()
                 percut = 0;
                 
                 if(joueurActif == 1 && roiNoireSauve == 1)
-                 {
                      echecEtMatRoiNoir = 0;
-                     printf("une tour ou la reine peut sauver le roi\n");
-                 }
-                 else if(joueurActif == 2 && roiBlancSauve == 1)
-                 {
+                else if(joueurActif == 2 && roiBlancSauve == 1)
                      echecEtMatRoiBlanc = 0;
-                     printf("une tour ou la reine peut sauver le roi\n");
-                 }
+
                  
                 caseDepart.ligne = sauvegardeCaseDepart.ligne;
                 caseDepart.colonne = sauvegardeCaseDepart.colonne;
@@ -2406,15 +2342,9 @@ void testSiEchecEtMat()
                         runTestEchecMatElimination();
                         
                         if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                        {
                             roiNoireSauve = 1;
-                            printf("HG noir (partir de %d %d) a partir de %c il le sauve à la ligne : %d et colonne %d\n", i,j,t[i][j], o, p);
-                        }
                         else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
-                        {
                             roiBlancSauve = 1;
-                            printf("HG blanc\n");
-                        }
                     }
                 }
                 percut = 0; //je remet percut à 0 pour les autres tests
@@ -2430,15 +2360,10 @@ void testSiEchecEtMat()
                         runTestEchecMatElimination();
                         
                         if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                        {
                             roiNoireSauve = 1;
-                            printf("HD noir\n");
-                        }
                         else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
-                        {
                             roiBlancSauve = 1;
-                            printf("HD blanc\n");
-                        }
+
                     }
                 }
                 percut = 0;
@@ -2454,16 +2379,10 @@ void testSiEchecEtMat()
                         runTestEchecMatElimination();
                         
                         if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                        {
                             roiNoireSauve = 1;
-                            printf("BD\n");
-                            printf("contenu : %c , ligne %d , colonne %d\n", t[o][p], o, p);
-                        }
                         else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
-                        {
                             roiBlancSauve = 1;
-                            printf("BD\n");
-                        }
+
                     }
                 }
                 percut = 0;
@@ -2479,15 +2398,10 @@ void testSiEchecEtMat()
                         runTestEchecMatElimination();
                         
                         if(joueurActif == 1 && RoiNoireEnECHEC == 0)
-                        {
                             roiNoireSauve = 1;
-                            printf("BG\n");
-                        }
                         else if(joueurActif == 2 && RoiBlancEnECHEC == 0)
-                        {
                             roiBlancSauve = 1;
-                            printf("BG\n");
-                        }
+
                     }
                 }
                 percut = 0;
@@ -2517,8 +2431,6 @@ void testSiEchecEtMat()
         
     flagTestSiEchecEtMat = 0 ;
     
-    printf("je SORS de testSiEchecEtMat() avec ECHEC = %d\n", ECHEC);
-
 }
 
 void runTestEchecMatElimination()
