@@ -60,12 +60,22 @@ void testMauvaiseSaisi();
 void runTestEchecMatElimination();
 void runTestEchecMatPion();
 void testSiPat();
-void runTestPatElimination();
-void runTestPatPion();
+int runTestPatElimination(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, char echiquierDeTest[8][8]);
+int runTestPatPion(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, char echiquierDeTest[8][8]);
+int testSiEchecPat(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, char echiquierDeTest[8][8]);
+int testDevantPat(int i, int j, char echiquierDeTest[8][8]);
+int testArrierePat(int i, int j, char echiquierDeTest[8][8]);
+int testDroitePat(int i, int j, char echiquierDeTest[8][8]);
+int testGauchePat(int i, int j, char echiquierDeTest[8][8]);
+int testDiagoHGPat(int i, int j, char echiquierDeTest[8][8]);
+int testDiagoHDPat(int i, int j, char echiquierDeTest[8][8]);
+int testDiagoBGPat(int i, int j, char echiquierDeTest[8][8]);
+int testDiagoBDPat(int i, int j, char echiquierDeTest[8][8]);
 void jeRoque();
 void sauvegarde();
 int chargement();
 void initialisationEchiquier();
+void affichagePat();
 
 /* ----------------------------------------  Déclaration des types en global  ----------------------------------------*/
   struct infoCase                              
@@ -76,7 +86,7 @@ void initialisationEchiquier();
               };
 
 /*---------------------------------------- Déclaration des variables globales ----------------------------------------*/
-/*
+
 char t[8] [8]={
     't','c','f','q','k','f','c','t',
     'p','p','p','p','p','p','p','p',
@@ -86,28 +96,19 @@ char t[8] [8]={
     ' ',' ',' ',' ',' ',' ',' ',' ',
     'P','P','P','P','P','P','P','P',
     'T','C','F','Q','K','F','C','T'
-};*/
+};
+// ------> pour tester le Pat, on met H1 en A1 puis G3 en G2 puis H7 en H1 puis G3 en G2 puis A1 en F1
 /*
 char t[8] [8]={
-    't','c','f','q',' ',' ','c','t',
-    'p','p','p','p','p','p',' ','p',
-    ' ',' ',' ',' ',' ',' ',' ','T',
+    't',' ',' ',' ',' ',' ',' ','Q',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ','k',' ',
     ' ',' ',' ',' ',' ',' ','F',' ',
+    ' ',' ',' ',' ',' ','P','P',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',
-    'P','P','P','P','F',' ','C',' ',
-    'T','C','F',' ','K','Q',' ','T'
+    'P','P','P','P','P','P','C','T',
+    'T','C','F','Q','K',' ',' ','T'
 };*/
-char t[8] [8]={
-    't','c','f','q','k',' ','c','t',
-    'p','p','p','p','p','p',' ','p',
-    ' ',' ',' ',' ',' ',' ',' ','T',
-    ' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ','F',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',
-    'P','P','P','p','F',' ','C','K',
-    'T','C','F',' ',' ','Q',' ','T'
-};
 
 
 struct infoCase caseDepart; 
@@ -128,6 +129,7 @@ int RoiNoireEnECHEC = 0;
 int changePiece = 0;
 int percut = 0;
 int roque = 0, roqueJ1 = 0, roqueJ2 = 0;
+int Pat = 1;
 
 
 
@@ -177,12 +179,21 @@ int main()
                                 case '1':
                     printf("\n\n");
                     printf("C'est parti !\n");
-                    //initialisationEchiquier();
+                    initialisationEchiquier();
                     while(partietermine == 0)
                     {
                         joueurActif = 1;
                         affichage();
-                        partietermine = deplacementPiece();
+                        testSiPat();
+                        if(Pat == 1)
+                        {
+                            partietermine = 1;
+                            affichagePat();
+                        }
+                        if(partietermine == 0)
+                        {
+                            partietermine = deplacementPiece();
+                        }
                         if(changePiece == 1)
                         {
                              while(changePiece == 1) 
@@ -196,7 +207,16 @@ int main()
                         {
                           joueurActif = 2;
                           affichage();
-                          partietermine = deplacementPiece();
+                          testSiPat();
+                          if(Pat == 1)
+                          {
+                              partietermine = 1;
+                              affichagePat();
+                          }
+                          if(partietermine == 0)
+                          {
+                              partietermine = deplacementPiece();
+                          }
                           if(changePiece == 1)
                           {
                              while(changePiece == 1) 
@@ -224,7 +244,16 @@ int main()
                         {
                             joueurActif = 1;
                             affichage();
-                            partietermine = deplacementPiece();
+                            testSiPat();
+                            if(Pat == 1)
+                            {
+                                partietermine = 1;
+                                affichagePat();
+                            }
+                            if(partietermine == 0)
+                            {
+                                partietermine = deplacementPiece();
+                            }
                             if(changePiece == 1)
                             {
                                 while(changePiece == 1) 
@@ -238,7 +267,16 @@ int main()
                             {
                                 joueurActif = 2;
                                 affichage();
-                                partietermine = deplacementPiece();
+                                testSiPat();
+                                if(Pat == 1)
+                                {
+                                    partietermine = 1;
+                                    affichagePat();
+                                }
+                                if(partietermine == 0)
+                                {
+                                    partietermine = deplacementPiece();
+                                }
                                 if(changePiece == 1)
                                 {
                                     while(changePiece == 1) 
@@ -257,7 +295,16 @@ int main()
                         {
                             joueurActif = 2;
                             affichage();
-                            partietermine = deplacementPiece();
+                            testSiPat();
+                            if(Pat == 1)
+                            {
+                                partietermine = 1;
+                                affichagePat();
+                            }
+                            if(partietermine == 0)
+                            {
+                                partietermine = deplacementPiece();
+                            }
                             if(changePiece == 1)
                             {
                                 while(changePiece == 1) 
@@ -271,7 +318,16 @@ int main()
                             {
                                 joueurActif = 1;
                                 affichage();
+                                testSiPat();
+                            if(Pat == 1)
+                            {
+                                partietermine = 1;
+                                affichagePat();
+                            }
+                            if(partietermine == 0)
+                            {
                                 partietermine = deplacementPiece();
+                            }
                                 if(changePiece == 1)
                                 {
                                     while(changePiece == 1) 
@@ -1323,6 +1379,16 @@ void affichageEchecRoiNoire()
         }
     }
 }
+/*--------------------------------------------- Affichage "PAT" ---------------------------------------------*/
+void affichagePat()
+{
+   printf("\n\n");
+   printf("                _____________________________________________\n\n\n\n");
+   printf("                                       PAT !\n\n");            
+   printf("                ***                 Il y a EGALITE !      ***\n\n\n\n"); 
+   printf("                ______________________________________________\n\n\n");  
+
+}    
 /*--------------------------------------------- Module de test devant pour tester l'ECHEC au roi ---------------------------------------------*/
 void testDevant(int i, int j)
 {
@@ -2373,19 +2439,1029 @@ void runTestEchecMatPion()
 /*--------------------------------------------- Module de vérication du Pat ---------------------------------------------*/
 void testSiPat()
 {
+    int ligneDepart, ligneArrivee, colonneDepart, colonneArrivee, echec = 1;
+    char echiquierDeTest[8][8]={
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' '
+    };
+    int i, j, k, l, m, n, o, p;;
+
+    for( i = 0 ; i <= 7 ; i++ )
+    {
+        for( j = 0 ; j <= 7 ; j++)
+        {
+            echiquierDeTest[i][j] = t[i][j];
+        }
+    }
+    
+    
+    Pat = 1;//je met Pat à 1, le but est que le test le passe à 0 (on peut continuer à jouer dans ce cas là)
+    
+    for(i = 0 ; i < 8 ; i++)
+    {
+        for(j = 0 ; j < 8 ; j++)//je parcours tout le tableau à la recherche des pieces
+        {
+            ligneDepart = i;
+            colonneDepart = j;
+            
+            if((echiquierDeTest[i][j] == 'c' && joueurActif == 2) || (echiquierDeTest[i][j] == 'C' && joueurActif == 1) )
+            {
+                ligneArrivee = ligneDepart -2;
+                colonneArrivee = colonneDepart -1;
+                
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                
+                echec = 1;
+
+                ligneArrivee = ligneDepart -2;
+                colonneArrivee = colonneDepart +1;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                ligneArrivee = ligneDepart -1;
+                colonneArrivee = colonneDepart -2;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+
+
+                ligneArrivee = ligneDepart -1;
+                colonneArrivee = colonneDepart +2;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+
+            
+                ligneArrivee = ligneDepart +2;
+                colonneArrivee = colonneDepart -1;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+
+
+                ligneArrivee = ligneDepart +2;
+                colonneArrivee = colonneDepart +1;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                
+                ligneArrivee = ligneDepart +1;
+                colonneArrivee = colonneDepart -2;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                    
+                ligneArrivee = ligneDepart +1;
+                colonneArrivee = colonneDepart +2;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+
+            }
+            
+            if(echiquierDeTest[i][j] == 'p' && joueurActif == 2)
+            {
+                if(i == 1 && t[ligneDepart+1][colonneDepart] == ' ' && t[ligneDepart +2][colonneDepart] == ' ') //avance de 2 cases pour le pion
+                {
+                    ligneArrivee= ligneDepart +2;
+                    colonneArrivee = colonneDepart;
+                    
+                    echec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                    if(echec == 0)
+                        Pat = 0;
+                    echec = 1;
+                }
+                
+                if(t[ligneDepart +1][colonneDepart] == ' ')
+                {
+                    ligneArrivee= ligneDepart +1;
+                    colonneArrivee = colonneDepart;
+                    
+                    echec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                    if(echec == 0)
+                        Pat = 0;
+                    echec = 1;
+                
+                ligneArrivee= ligneDepart +1;
+                colonneArrivee = colonneDepart +1;
+                
+                echec = runTestPatPion(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+    
+            
+                ligneArrivee= ligneDepart +1;
+                colonneArrivee = colonneDepart -1;
+                
+                echec = runTestPatPion(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                }
+
+            }
+            
+            if(echiquierDeTest[i][j] == 'P' && joueurActif == 1)
+            {
+                if(i == 6 && t[5][j] == ' ' && t[4][j] == ' ') //avance de 2 cases pour le pion
+                {
+                    ligneArrivee= ligneDepart -2;
+                    colonneArrivee = colonneDepart;
+                    
+                    
+                    echec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                    if(echec == 0)
+                        Pat = 0;
+                    echec = 1;
+  
+                }
+                
+                if(t[ligneDepart -1][colonneDepart] == ' ')
+                {
+                    ligneArrivee= ligneDepart -1;
+                    colonneArrivee = colonneDepart;
+                    
+                    echec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                    if(echec == 0)
+                        Pat = 0;
+                    echec = 1;
+                }
+                
+                ligneArrivee= ligneDepart -1;
+                colonneArrivee = colonneDepart +1;
+                
+                echec = runTestPatPion(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+    
+                ligneArrivee= ligneDepart -1;
+                colonneArrivee = colonneDepart -1;
+                
+                echec = runTestPatPion(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                    
+            }
+            
+            if((echiquierDeTest[i][j] == 'k' && joueurActif == 2 )|| (echiquierDeTest[i][j] == 'K' && joueurActif == 1))
+            {
+                ligneArrivee= ligneDepart -1;
+                colonneArrivee = colonneDepart -1;
+                
+               echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+
+                    
+                ligneArrivee= ligneDepart -1;
+                colonneArrivee = colonneDepart;
+                
+               echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                ligneArrivee= ligneDepart -1;
+                colonneArrivee = colonneDepart +1;
+                
+               echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                ligneArrivee= ligneDepart;
+                colonneArrivee = colonneDepart+1;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                ligneArrivee= ligneDepart +1;
+                colonneArrivee = colonneDepart +1;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                ligneArrivee= ligneDepart +1;
+                colonneArrivee = colonneDepart;
+                
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                ligneArrivee= ligneDepart +1;
+                colonneArrivee = colonneDepart -1;
+
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+                
+                ligneArrivee= ligneDepart;
+                colonneArrivee = colonneDepart -1;
+
+                echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                if(echec == 0)
+                    Pat = 0;
+                echec = 1;
+
+            }
+            
+            
+           if(((echiquierDeTest[i][j] == 't' || echiquierDeTest[i][j] == 'q') && joueurActif == 2) || ((echiquierDeTest[i][j] == 'T' || echiquierDeTest[i][j] == 'Q') && joueurActif == 1))
+           {
+                percut = 0;
+                /* je check en haut */
+                for(k= i ; k >= 0 ; k--)
+                {
+                    if(percut == 0 && (k != i))
+                    {
+                        ligneArrivee= k;
+                        colonneArrivee = colonneDepart;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                       if(echec == 0)
+                            Pat = 0;
+                         echec = 1;
+                        
+                    }
+                }
+                percut = 0; //je remet percut à 0 pour les autres tests
+                
+                /* je check en bas */
+                for(l= i ; l < 8 ; l++)
+                {
+                    if(percut == 0 && (l != i))
+                    {
+                        ligneArrivee= l;
+                        colonneArrivee = colonneDepart;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                        if(echec == 0)
+                              Pat = 0;
+                        echec = 1;
+                    }
+                }
+                percut = 0;
+                
+                /* je check a droite */
+                for(m= j ; m < 8 ; m++)
+                {
+                    if(percut == 0 && (m != j))
+                    {
+                        ligneArrivee= ligneDepart;
+                        colonneArrivee = m;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                        if(echec == 0)
+                            Pat = 0;
+                        echec = 1;
+                        
+                    }
+                }
+                percut = 0;
+                
+                /* je check a gauche */
+                for(n= j ; n >= 0 ; n--)
+                {
+                    if(percut == 0 && (n != j))
+                    {
+                        ligneArrivee= ligneDepart;
+                        colonneArrivee = n;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                        if(echec == 0)
+                            Pat = 0;
+                        echec = 1;
+
+                    }  
+                }
+                percut = 0;
+                
+                 
+            }
+            
+            if(((echiquierDeTest[i][j] == 'f' || echiquierDeTest[i][j] == 'q') && joueurActif == 2) || ((echiquierDeTest[i][j] == 'F' || echiquierDeTest[i][j] == 'Q') && joueurActif == 1))
+            {  
+                percut = 0;
+                
+                /* je check HG */
+                for(o= i, p=j ; o >= 0, p >= 0 ; o-- , p--)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        ligneArrivee= o;
+                        colonneArrivee = p;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                        if(echec == 0)
+                            Pat = 0;
+                        echec = 1;
+                    }
+                }
+                percut = 0; //je remet percut à 0 pour les autres tests
+                
+                /* je check HD */
+                for(o= i, p=j ; o >= 0, p < 8 ; o-- , p++)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        ligneArrivee= o;
+                        colonneArrivee = p;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                        if(echec == 0)
+                            Pat = 0;
+                        echec = 1;
+                    }
+                }
+                percut = 0;
+                
+                /* je check BD */
+                for(o= i, p=j ; o < 8, p < 8 ; o++ , p++)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        ligneArrivee= o;
+                        colonneArrivee = p;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                        if(echec == 0)
+                            Pat = 0;
+                        echec = 1;
+
+                    }
+                }
+                percut = 0;
+                
+                /* je check BG */
+                for(o= i, p=j ; o < 8, p >= 0 ; o++ , p--)
+                {
+                    if(percut == 0 && (o != i && p != j))
+                    {
+                        ligneArrivee= o;
+                        colonneArrivee = p;
+                        
+                        echec = runTestPatElimination(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest);
+                        if(echec == 0)
+                            Pat = 0;
+                        echec = 1;
+                    }
+                }
+                percut = 0;
+
+            }
+            
+        }
+    }
     
 }
+    
+    
 //----------------------- pour gestion de l'élimination fictive dans le testSiPat()----------------------------//
-void runTestPatElimination()
+int runTestPatElimination(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, char echiquierDeTest[8][8])
 {
+    //printf("je suis dans runTestEchecMatElimination\n");
+    //printf("ligneDepart : %d , colonneDepart : %d , ligneArrivee : %d , colonneArrivee : %d\n", ligneDepart, colonneDepart, ligneArrivee, colonneArrivee);
+    char valeurCaseMange = ' ', valeurEchec = 0;
+   
+    if(joueurActif == 2)
+    {
+        if(echiquierDeTest[ligneArrivee][colonneArrivee] != 't' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'f' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'c' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'k' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'q' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'p' )
+        {
+            /* sauvegarde de la piece visé en cas d'élimination*/
+          valeurCaseMange = echiquierDeTest[ligneArrivee][colonneArrivee];
+          valeurEchec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
+           /* on replace la piece visé car si il y a élimination il la effacé*/
+          echiquierDeTest[ligneArrivee][colonneArrivee] = valeurCaseMange;
+          //printf("valeurEchec : %d si ligneArrivee : %d , colonneArrivee : %d\n", valeurEchec, ligneArrivee, colonneArrivee);
+          
+
+        }
+        if(echiquierDeTest[ligneArrivee][colonneArrivee] == 't' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'f' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'c' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'k' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'q' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'p' )
+        {
+            percut = 1;
+        }
+    }
+    else if(joueurActif == 1)
+    {
+        if(echiquierDeTest[ligneArrivee][colonneArrivee] != 'T' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'F' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'C' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'K' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'Q' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'P' )
+        {
+          valeurCaseMange = echiquierDeTest[ligneArrivee][colonneArrivee];
+          valeurEchec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
+           /* on replace la piece visé car si il y a élimination il la effacé*/
+          echiquierDeTest[ligneArrivee][colonneArrivee] = valeurCaseMange;
+         
+        }
+        if(echiquierDeTest[ligneArrivee][colonneArrivee] == 'T' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'F' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'C' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'K' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'Q' ||
+           echiquierDeTest[ligneArrivee][colonneArrivee] == 'P' )
+        {
+            percut = 1;
+        }
+    }
     
+    return valeurEchec;
 }
 
-void runTestPatPion()
+int runTestPatPion(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, char echiquierDeTest[8][8])
+{
+    char valeurCaseMange, valeurEchec = 0;
+    if(joueurActif == 2)
+    {
+        if(echiquierDeTest[ligneArrivee][colonneArrivee] != 't' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'f' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'c' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'k' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'q' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'p' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != ' ')
+        {
+          valeurCaseMange = echiquierDeTest[ligneArrivee][colonneArrivee];
+          valeurEchec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
+           /* on replace la piece visé car si il y a élimination il la effacé*/
+          echiquierDeTest[ligneArrivee][colonneArrivee] = valeurCaseMange;
+        }  
+    }
+    else if(joueurActif == 1)
+    {
+        if(echiquierDeTest[ligneArrivee][colonneArrivee] != 'T' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'F' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'C' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'K' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'Q' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != 'P' &&
+           echiquierDeTest[ligneArrivee][colonneArrivee] != ' ')
+        {
+          valeurCaseMange = echiquierDeTest[ligneArrivee][colonneArrivee];
+          valeurEchec = testSiEchecPat(ligneDepart, colonneDepart, ligneArrivee, colonneArrivee, echiquierDeTest); //il va tester si il peux faire ce coup, et test l'echec à chaque fois 
+           /* on replace la piece visé car si il y a élimination il la effacé*/
+          echiquierDeTest[ligneArrivee][colonneArrivee] = valeurCaseMange;
+        }  
+    }
+    return valeurEchec;
+}
+/*--------------------------------------------- Module de vérication de l'ECHEC au ROI pour le PAT---------------------------------------------*/
+int testSiEchecPat(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, char echiquierDeTest[8][8])
+{
+    struct infoCase sauvegardeCaseDepartEchec;
+    struct infoCase sauvegardeCaseArriveeEchec;
+    
+    sauvegardeCaseDepartEchec.ligne = ligneDepart;
+    sauvegardeCaseDepartEchec.colonne = colonneDepart;
+    
+    sauvegardeCaseArriveeEchec.ligne = ligneArrivee;
+    sauvegardeCaseArriveeEchec.colonne = colonneArrivee;
+    
+    char sauvegardePieceDepart = echiquierDeTest[ligneDepart][colonneDepart];
+    char sauvegardePieceArrivee = echiquierDeTest[ligneArrivee][colonneArrivee];
+
+    int valeurEchec = 0;
+    int i, j;
+    
+    /* je deplace la piece pour tester si echec*/
+    echiquierDeTest[ligneArrivee][colonneArrivee] = sauvegardePieceDepart;
+    echiquierDeTest[ligneDepart][colonneDepart] = ' ';
+    /* je parcours le tableau pour tester chaque piece*/
+    for(i = 0 ; i < 8 ; i++)
+    {
+        //printf("---------on test la ligne : %d\n",i);
+        for(j = 0 ; j < 8 ; j++)
+        {
+            if(echiquierDeTest[i][j] == 't' || echiquierDeTest[i][j] == 'T')
+            {
+                if(testDevantPat(i, j, echiquierDeTest)  == 1 ||
+                   testArrierePat(i, j, echiquierDeTest) == 1 ||
+                   testDroitePat(i, j, echiquierDeTest)  == 1 ||
+                   testGauchePat(i, j, echiquierDeTest)  == 1)
+                   {
+                       valeurEchec = 1;
+                   }
+            }
+            else if(echiquierDeTest[i][j] == 'p')
+            { 
+                if((echiquierDeTest[i + 1][j - 1] == 'K') ||
+                   (echiquierDeTest[i + 1][j + 1] == 'K'))
+                {
+                    valeurEchec = 1; //si il est echec
+                }
+
+            }
+            else if(echiquierDeTest[i][j] == 'P')
+            {
+
+                if((echiquierDeTest[i - 1][j - 1] == 'k') ||
+                   (echiquierDeTest[i - 1][j + 1] == 'k'))
+                {
+                    valeurEchec = 1; //si il est echec
+                }
+
+            }
+            else if(echiquierDeTest[i][j] == 'c')
+            {
+                if(((i- 2 < 8 && i- 2 >=0) && (j- 1 < 8 && j- 1 >= 0 ) && (echiquierDeTest[i - 2][j - 1] == 'K')) ||
+                   ((i- 2 < 8 && i- 2 >=0) && (j+ 1 < 8 && j+ 1 >= 0 ) && (echiquierDeTest[i - 2][j + 1] == 'K')) ||
+                   ((i- 1 < 8 && i- 1 >=0) && (j- 2 < 8 && j- 2 >= 0 ) && (echiquierDeTest[i - 1][j - 2] == 'K')) ||
+                   ((i- 1 < 8 && i- 1 >=0) && (j+ 2 < 8 && j+ 2 >= 0 ) && (echiquierDeTest[i - 1][j + 2] == 'K')) ||
+                   ((i+ 2 < 8 && i+ 2 >=0) && (j- 1 < 8 && j- 1 >= 0 ) && (echiquierDeTest[i + 2][j - 1] == 'K')) ||
+                   ((i+ 2 < 8 && i+ 2 >=0) && (j+ 1 < 8 && j+ 1 >= 0 ) && (echiquierDeTest[i + 2][j + 1] == 'K')) ||
+                   ((i+ 1 < 8 && i+ 1 >=0) && (j- 2 < 8 && j- 2 >= 0 ) && (echiquierDeTest[i + 1][j - 2] == 'K')) ||
+                   ((i+ 1 < 8 && i+ 1 >=0) && (j+ 2 < 8 && j+ 2 >= 0 ) && (echiquierDeTest[i + 1][j + 2] == 'K')))
+                {
+                    //if(joueurActif != 1 && flagTestSiEchecEtMat != 1) --------> pour corrigé le prob echec et mat du c.. mais provoque d'autre soucis (on peut plus mettre en echec)
+                        valeurEchec = 1; //si il est echec
+                     
+                }
+
+            }
+            else if(echiquierDeTest[i][j] == 'C')
+            {
+                if(((i- 2 < 8 && i- 2 >=0) && (j- 1 < 8 && j- 1 >= 0 ) && (echiquierDeTest[i - 2][j - 1] == 'k')) ||
+                   ((i- 2 < 8 && i- 2 >=0) && (j+ 1 < 8 && j+ 1 >= 0 ) && (echiquierDeTest[i - 2][j + 1] == 'k')) ||
+                   ((i- 1 < 8 && i- 1 >=0) && (j- 2 < 8 && j- 2 >= 0 ) && (echiquierDeTest[i - 1][j - 2] == 'k')) ||
+                   ((i- 1 < 8 && i- 1 >=0) && (j+ 2 < 8 && j+ 2 >= 0 ) && (echiquierDeTest[i - 1][j + 2] == 'k')) ||
+                   ((i+ 2 < 8 && i+ 2 >=0) && (j- 1 < 8 && j- 1 >= 0 ) && (echiquierDeTest[i + 2][j - 1] == 'k')) ||
+                   ((i+ 2 < 8 && i+ 2 >=0) && (j+ 1 < 8 && j+ 1 >= 0 ) && (echiquierDeTest[i + 2][j + 1] == 'k')) ||
+                   ((i+ 1 < 8 && i+ 1 >=0) && (j- 2 < 8 && j- 2 >= 0 ) && (echiquierDeTest[i + 1][j - 2] == 'k')) ||
+                   ((i+ 1 < 8 && i+ 1 >=0) && (j+ 2 < 8 && j+ 2 >= 0 ) && (echiquierDeTest[i + 1][j + 2] == 'k')))
+                {
+                    //if(joueurActif != 2 && flagTestSiEchecEtMat != 1)
+                        valeurEchec = 1; //si il est echec
+                }    
+
+            }
+            else if(echiquierDeTest[i][j] == 'f' || echiquierDeTest[i][j] == 'F')
+            {
+                if(testDiagoHGPat(i,j, echiquierDeTest) == 1 || 
+                   testDiagoHDPat(i,j, echiquierDeTest) == 1 ||
+                   testDiagoBGPat(i,j, echiquierDeTest) == 1 ||
+                   testDiagoBDPat(i,j, echiquierDeTest) == 1 )
+                   {
+                       valeurEchec = 1;
+                   }
+            }
+            else if(echiquierDeTest[i][j] == 'q' || echiquierDeTest[i][j] == 'Q')
+            {
+                if(testDevantPat(i, j, echiquierDeTest)  == 1 ||
+                   testArrierePat(i, j, echiquierDeTest) == 1 ||
+                   testDroitePat(i, j, echiquierDeTest)  == 1 ||
+                   testGauchePat(i, j, echiquierDeTest)  == 1 ||
+                   testDiagoHGPat(i,j, echiquierDeTest)  == 1 ||
+                   testDiagoHDPat(i,j, echiquierDeTest)  == 1 ||
+                   testDiagoBGPat(i,j, echiquierDeTest)  == 1 ||
+                   testDiagoBDPat(i,j, echiquierDeTest)  == 1)
+                   {
+                       valeurEchec = 1;
+                   }
+            }
+            
+        } 
+    }
+    /* je remets les pieces comme avant*/
+    echiquierDeTest[sauvegardeCaseDepartEchec.ligne][sauvegardeCaseDepartEchec.colonne] = sauvegardePieceDepart;
+    echiquierDeTest[sauvegardeCaseArriveeEchec.ligne][sauvegardeCaseArriveeEchec.colonne] = sauvegardePieceArrivee;
+    
+    return valeurEchec;
+        
+}
+
+
+
+/*--------------------------------------------- Module de test devant pour tester l'ECHEC au roi pour le PAT ---------------------------------------------*/
+int testDevantPat(int i, int j, char echiquierDeTest[8][8])
+{
+    //printf("----je viens d'entrer dans testDevant() \n");
+    int valeurEchec = 0;
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    k = i + 1;
+    //printf("J'ai trouver une tour noir !\n");         //      for(int k = 0 ; k < (8 - i) ; k++)
+    if(echiquierDeTest[i][j] == 't'|| echiquierDeTest[i][j] == 'q')
+    {    
+        while((k < 8) && valeurEchec == 0 && piecePercute == 0)
+        {
+           // printf("---- dans le while avec K : %d et J : %d\n",k,j);
+            //printf("----contenu : %c\n",t[k][j]);
+            if(echiquierDeTest[k][j] == 'K')
+            {
+                valeurEchec = 1; //si echec
+            }
+            else if(echiquierDeTest[k][j] != ' ')
+            {
+                piecePercute = 1;
+            }
+
+            k++;
+        }
+    }
+    else if(echiquierDeTest[i][j] == 'T'|| echiquierDeTest[i][j] == 'Q')
+    {
+            if(echiquierDeTest[k][j] == 'k')
+            {
+                valeurEchec = 1; //si echec
+            }
+            else if(echiquierDeTest[k][j] != ' ')
+            {
+                piecePercute = 1;
+            }
+            k++;
+    }
+    
+    return valeurEchec;
+}
+/*--------------------------------------------- Module de test derrière pour tester l'ECHEC au roi ---------------------------------------------*/
+int testArrierePat(int i, int j, char echiquierDeTest[8][8])
+{
+    //printf("----je viens d'entrer dans testArriere() \n");
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    int valeurEchec = 0;
+    k = i - 1;
+    if(echiquierDeTest[i][j] == 't'|| echiquierDeTest[i][j] == 'q')
+    { 
+        while((k >= 0 ) && valeurEchec == 0 && piecePercute == 0)
+        {
+            if(echiquierDeTest[k][j] == 'K')
+            {
+                valeurEchec = 1;//si echec
+            }
+            else if(echiquierDeTest[k][j] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {return 0;}
+            k--;
+        }
+    }
+    else if(echiquierDeTest[i][j] == 'T'|| echiquierDeTest[i][j] == 'Q')
+    {
+        while((k >= 0 ) && valeurEchec == 0 && piecePercute == 0)
+        {
+            if(echiquierDeTest[k][j] == 'k')
+            {
+                valeurEchec = 1;
+            }
+            else if(echiquierDeTest[k][j] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            k--;
+        }
+    }
+    return valeurEchec;
+}
+
+/*--------------------------------------------- Module de test a droite pour tester l'ECHEC au roi ---------------------------------------------*/
+int testDroitePat(int i, int j, char echiquierDeTest[8][8])
+{
+    //printf("----je viens d'entrer dans testDroite() \n");    
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    k = j + 1;
+    int valeurEchec = 0;
+    if(echiquierDeTest[i][j] == 't'|| echiquierDeTest[i][j] == 'q')
+    { 
+        while((k < 8 ) && valeurEchec == 0 && piecePercute == 0)
+        {
+            if(echiquierDeTest[i][k] == 'K')
+            {
+                valeurEchec = 1;//si echec
+            }
+            else if(echiquierDeTest[i][j] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {return 0;}
+            k++;
+        }
+    }
+    else if(echiquierDeTest[i][j] == 'T'|| echiquierDeTest[i][j] == 'Q')
+    {
+        while((k < 8 ) && valeurEchec == 0 && piecePercute == 0)
+        {
+            if(echiquierDeTest[i][k] == 'k')
+            {
+                valeurEchec = 1; //si echec
+            }
+            else if(echiquierDeTest[i][k] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            k++;
+        }
+    }
+    return valeurEchec;
+}
+
+/*--------------------------------------------- Module de test a gauche pour tester l'ECHEC au roi ---------------------------------------------*/
+int testGauchePat(int i, int j, char echiquierDeTest[8][8])
+{
+    //printf("----je viens d'entrer dans testGauche() \n");    
+    int k = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    k = j - 1 ;
+    int valeurEchec = 0;
+    if(echiquierDeTest[i][j] == 't'|| echiquierDeTest[i][j] == 'q')
+    { 
+        while((k >= 0 ) && valeurEchec == 0 && piecePercute == 0)
+        {
+            if(echiquierDeTest[i][k] == 'K')
+            {
+                valeurEchec = 1;
+            }
+            else if(echiquierDeTest[i][k] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            k--;
+        }
+    }
+    else if(echiquierDeTest[i][j] == 'T'|| echiquierDeTest[i][j] == 'Q')
+    {
+        while((k >= 0 ) && valeurEchec == 0 && piecePercute == 0)
+        {
+            if(echiquierDeTest[i][k] == 'k')
+            {
+                valeurEchec = 1;
+            }
+            else if(echiquierDeTest[i][k] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            k--;
+        }
+    }
+    return valeurEchec;
+}
+/*--------------------------------------------- Module de test haut/gauche pour tester l'ECHEC au roi ---------------------------------------------*/
+int testDiagoHGPat(int i, int j, char echiquierDeTest[8][8])
+{
+    //printf("----je viens d'entrer dans testDiagoHG() \n");    
+    int l = 0, c = 0;
+    int piecePercute = 0;
+    int valeurEchec = 0;
+    piecePercute = 0;
+    l = i - 1;
+    c = j - 1;
+    
+    if(echiquierDeTest[i][j] == 'f'|| echiquierDeTest[i][j] == 'q')
+    {    
+        while(l >= 0 && c >=0 && valeurEchec == 0 && piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'K')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            l--;
+            c--;
+        }
+    }
+    else if(echiquierDeTest[i][j] == 'F'|| echiquierDeTest[i][j] == 'Q')
+    {
+        while(l >= 0 && c >=0 && valeurEchec == 0 &&  piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'k')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {  }
+            l--;
+            c--;
+        }
+    }
+    return valeurEchec;
+}
+
+/*--------------------------------------------- Module de test haut/droite pour tester l'ECHEC au roi ---------------------------------------------*/
+int testDiagoHDPat(int i, int j, char echiquierDeTest[8][8])
+{
+    //printf("----je viens d'entrer dans testDiagoHD() \n");        
+    int l = 0, c = 0;
+    int valeurEchec = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    l = i - 1;
+    c = j + 1;
+    
+    if(echiquierDeTest[i][j] == 'f' || echiquierDeTest[i][j] == 'q')
+    {    
+        while(l >= 0 && c < 8 && valeurEchec == 0 && piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'K')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            l--;
+            c++;
+        }
+    }
+    else if(echiquierDeTest[i][j] == 'F'|| echiquierDeTest[i][j] == 'Q')
+    {
+        while(l >= 0 && c < 8 && valeurEchec == 0 && piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'k')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            { }
+            l--;
+            c++;
+        }
+    }
+    return valeurEchec;
+}
+
+/*--------------------------------------------- Module de test bas/gauche pour tester l'ECHEC au roi ---------------------------------------------*/
+int testDiagoBGPat(int i, int j, char echiquierDeTest[8][8])
+{
+    //printf("----je viens d'entrer dans testDiagoBG() \n");        
+    int l = 0, c = 0;
+    int valeurEchec = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    l = i + 1;
+    c = j - 1;
+    
+    if(echiquierDeTest[i][j] == 'f' || echiquierDeTest[i][j] == 'q')
+    { 
+        while(l < 8 && c >= 0 && valeurEchec == 0 && piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'K')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            l++;
+            c--;
+        }
+    }
+    else if(echiquierDeTest[i][j] == 'F'|| echiquierDeTest[i][j] == 'Q')
+    {
+        while(l < 8 && c >= 0 && valeurEchec == 0 && piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'k')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            { }
+            l++;
+            c--;
+        }
+    }
+    return valeurEchec;
+}
+
+/*--------------------------------------------- Module de test bas/droit pour tester l'ECHEC au roi ---------------------------------------------*/
+int testDiagoBDPat(int i, int j, char echiquierDeTest[8][8])
 {
     
-
+      //printf("----je viens d'entrer dans testDiagoBD() \n");    
+    int l = 0, c = 0;
+    int valeurEchec = 0;
+    int piecePercute = 0;
+    piecePercute = 0;
+    l = i + 1;
+    c = j + 1;
+    
+    if(echiquierDeTest[i][j] == 'f' || echiquierDeTest[i][j] == 'q')
+    {
+        while(l < 8 && c < 8 && valeurEchec == 0 && piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'K')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            {}
+            l++;
+            c++;
+        }
+    }    
+    else if(echiquierDeTest[i][j] == 'F'|| echiquierDeTest[i][j] == 'Q')
+    {
+        while(l < 8 && c < 8 && valeurEchec == 0 && piecePercute == 0 )
+        {
+            if(echiquierDeTest[l][c] == 'k')
+            {
+                valeurEchec = 1; 
+            }
+            else if(echiquierDeTest[l][c] != ' ')
+            {
+                piecePercute = 1;
+            }
+            else
+            { }
+            l++;
+            c++;
+        }
+    }
+    return valeurEchec;
 }
+
+
 
 /*--------------------------------------------- Faire un roque ---------------------------------------------*/
 void jeRoque()
