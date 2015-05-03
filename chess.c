@@ -1,15 +1,27 @@
 /*
 -------TODO------ : 
     - travailler sur l'ergonomie
-    - dans testSiEchec(), factoriser pour que la boucle s'arrête dès le premier echec
     - virer les printf en commentaire
-    - Nouvel échiquier en recommençant une partie      ----> DONE !
     - Dégager les fautes d'orthographe
     - Debug Pat & Echec & Mat ----> cf. chess30.c
     - Debug, il affiche ROI NOIR EN ECHEC lors qu'on change de piece après avoir tenter un coup qui met son propre roi en echec
             l'affichage se corrige tout seul après le deplacement d'une piece
     - Debug, toujours l'affichage ROI NOIR EN ECHEC (le blanc aussi surement) = il s'affiche lorsqu'un roi en echec mange une piece pour s'en sortir.
         encore un fois, le bug se corrige quand on continue la parite
+                --> voila un échiquier pour tester ce bug : F8 en B4 puis d2 en D4 (!message d'erreur!) donc on change de piece 2 et la "ROI NOIR EN ECEHC APPARAIT"
+    char t[8] [8]={
+    't','c','f','q','k','f','c','t',
+    'p','p','p','p','p','p','p','p',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    'P','P','P','P',' ','P','P','P',
+    'T','C','F','Q','K','F','C','T'
+};
+
+
+    Deuxieme Bug --> toujours avec le même échiquier F8 en B4 puis H2 en H3 puis B4 en D2 (ici on a l'affichage d'echec) puis E1 en D2 --> bug semble être corrigé
 
 
      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +87,7 @@ void jeRoque();
 void sauvegarde();
 int chargement();
 void initialisationEchiquier();
+void videBuffer();
 void affichagePat();
 
 /* ----------------------------------------  Déclaration des types en global  ----------------------------------------*/
@@ -86,7 +99,7 @@ void affichagePat();
               };
 
 /*---------------------------------------- Déclaration des variables globales ----------------------------------------*/
-
+/*
 char t[8] [8]={
     't','c','f','q','k','f','c','t',
     'p','p','p','p','p','p','p','p',
@@ -96,8 +109,9 @@ char t[8] [8]={
     ' ',' ',' ',' ',' ',' ',' ',' ',
     'P','P','P','P','P','P','P','P',
     'T','C','F','Q','K','F','C','T'
-};
+};*/
 // ------> pour tester le Pat, on met H1 en A1 puis G3 en G2 puis H7 en H1 puis G3 en G2 puis A1 en F1
+// ------> pour tester l'echec et mat, H1 en G1
 /*
 char t[8] [8]={
     't',' ',' ',' ',' ',' ',' ','Q',
@@ -109,6 +123,16 @@ char t[8] [8]={
     'P','P','P','P','P','P','C','T',
     'T','C','F','Q','K',' ',' ','T'
 };*/
+char t[8] [8]={
+    ' ',' ',' ',' ',' ','T',' ','T',
+    ' ',' ',' ',' ','T',' ','F',' ',
+    ' ',' ',' ',' ',' ',' ','k','P',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ','P',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',
+    'P','P','P','P','P','P',' ','T',
+    'T','C','F','Q','K',' ',' ','T'
+};
 
 
 struct infoCase caseDepart; 
@@ -158,6 +182,7 @@ int main()
     
     while(choix[0] != '0')
     {
+        partietermine = 0; roqueJ1 = 0; roqueJ2 = 0; 
         printf("-------------    MENU      -----------------\n");
         printf("    |  -1- Commencer une nouvelle partie | \n");
         printf("    |  -2- Charger une partie            | \n");
@@ -166,7 +191,7 @@ int main()
         
         printf("Choix : ");
         scanf("%s", choix);
-        
+        videBuffer();
          
         if(choix[0] >= '0' && choix[0] <= '2')
         {
@@ -176,16 +201,16 @@ int main()
                     printf("Au revoir, et a bientot !\n");
                     break;
                 
-                                case '1':
+                case '1':
                     printf("\n\n");
                     printf("C'est parti !\n");
-                    initialisationEchiquier();
+                    //initialisationEchiquier();
                     while(partietermine == 0)
                     {
                         joueurActif = 1;
                         affichage();
                         testSiPat();
-                        if(Pat == 1)
+                        if(Pat == 1 )
                         {
                             partietermine = 1;
                             affichagePat();
@@ -375,8 +400,16 @@ void initialisationEchiquier()
             t[i][j] = echiquierOfficiel[i][j];
         }
     }
-    
+}
 
+/* ---------------------------------------- Fonction pour vider le Buffer ----------------------------------------*/
+void videBuffer()
+{
+    int purge = 0;
+    while(purge != '\n')
+    {
+        purge = getchar();
+    }
 }
 /* ---------------------------------------- Fonction affichage de l'echiquier ----------------------------------------*/
 void affichage()
@@ -433,12 +466,14 @@ printf("\n\n\n\n\n");
     { 
         printf("\n\n");
         printf("                          ******** ROI BLANC EN ECHEC ! ******\n");
+        
         EchecBlanc = 0;
     }
     else if(EchecNoir == 1)
     {
         printf("\n\n");
         printf("                          ******** ROI NOIR EN ECHEC ! *******\n");
+        
         EchecNoir = 0;
     }
   printf("\n\n\n");
@@ -451,17 +486,19 @@ int deplacementPiece()
     char alphabet[10]= "ABCDEFGH", choix[20];  
     int i = 0, numeroLigne;
     caseDepart.colonne = 0 ;
-    char pieceTrouve, lettreColonne;
+    char pieceTrouve, lettreColonne, videBuffer = 'z';
     ECHEC = 1; 
-    
+
     while(ECHEC == 1 && partietermine == 0)
     {
         printf("Ou se trouve la piece que vous voulez deplacer? (ex : B2) : ");
         scanf("%s", choix);
+        videBuffer();
         
         lettreColonne = toupper(choix[0]);
         numeroLigne = choix[1] - 48;
         
+        /* Cas ou on choisit une option du menu */
         if(choix[0] >= '0' && choix[0] <= '3')
         {
             switch(choix[0])
@@ -491,12 +528,14 @@ int deplacementPiece()
                     break;
             }
         }
+        /* Cas ou la saisie ressemble aux coordonees d'une case */
         else if(lettreColonne >= 'A' && lettreColonne <= 'H' && numeroLigne >= 0 && numeroLigne <= 9)
         {
                 ECHEC = 0;
                 caseDepart.ligne = numeroLigne;
                 caseDepart.ligne --;
                 caseDepart.charColonne = lettreColonne;
+                /* On verifie que cette case existe bien sur l'echiquier */
                 verifCaseChoisie();
                 pieceTrouve = t[caseDepart.ligne][caseDepart.colonne] ;
                 pieceTrouve = toupper(pieceTrouve);
@@ -622,10 +661,9 @@ void verifCaseChoisie()
 /*--------------------------------------------- Validation de la case arrivee ---------------------------------------------*/ 
 int verifDeplacementArrivee()
 {
-    //printf("je suis dans verifDeplacementArrivee\n");
     char alphabet[10]= "ABCDEFGH", choix[20];
     int i = 0, numeroLigne;
-    char lettreColonne;
+    char lettreColonne, videBuffer = 'z';
     RoiBlancEnECHEC = 0;
     RoiNoireEnECHEC = 0;
     
@@ -636,6 +674,7 @@ int verifDeplacementArrivee()
 
             printf("Ou voulez vous la deplacer? (ex : B2) : ");
             scanf("%s", choix);
+            videBuffer();
             
             lettreColonne = toupper(choix[0]);
             numeroLigne = choix[1] - 48;
@@ -983,7 +1022,6 @@ void deplacementReineFouTour()
 /*--------------------------------------------- Procédure de gestion de l'elimination ---------------------------------------------*/ 
 void verifEliminationPiece()
 {
-   //printf("je suis entrée dans verifEliminationPiece, et ECHEC = %d\n",ECHEC );
     
     if(joueurActif == 1)
     {
@@ -1340,8 +1378,8 @@ void affichageEchecRoiBlanc()
             partietermine = 1;
             printf("\n\n");
             printf("                _____________________________________________\n\n\n\n");
-            printf("                                 ECHEC ET MAT !\n\n");            
-            printf("                ***          LE JOUEUR NOIR GAGNE !      ***\n\n\n\n"); 
+            printf("                                ECHEC ET MAT !\n\n");            
+            printf("                ***        LE JOUEUR NOIR  GAGNE !        ***\n\n\n\n"); 
             printf("                ______________________________________________\n\n\n"); 
         }
         else
@@ -1369,8 +1407,8 @@ void affichageEchecRoiNoire()
             partietermine = 1;
             printf("\n\n");
             printf("                _____________________________________________\n\n\n\n");
-            printf("                                 ECHEC ET MAT !\n\n");            
-            printf("                ***          LE JOUEUR BLANC GAGNE !      ***\n\n\n\n"); 
+            printf("                                ECHEC ET MAT !\n\n");            
+            printf("                ***        LE JOUEUR BLANC GAGNE !        ***\n\n\n\n"); 
             printf("                ______________________________________________\n\n\n"); 
         }
         else
@@ -1384,8 +1422,8 @@ void affichagePat()
 {
    printf("\n\n");
    printf("                _____________________________________________\n\n\n\n");
-   printf("                                       PAT !\n\n");            
-   printf("                ***                 Il y a EGALITE !      ***\n\n\n\n"); 
+   printf("                                     PAT !\n\n");            
+   printf("                ***            Il y a EGALITE !           ***\n\n\n\n"); 
    printf("                ______________________________________________\n\n\n");  
 
 }    
@@ -1420,6 +1458,8 @@ void testDevant(int i, int j)
     }
     else if(t[i][j] == 'T'|| t[i][j] == 'Q')
     {
+        while((k < 8 ) && RoiBlancEnECHEC == 0 && RoiNoireEnECHEC == 0 && piecePercute == 0)
+        {   
             if(t[k][j] == 'k')
             {
                 affichageEchecRoiNoire();
@@ -1432,6 +1472,7 @@ void testDevant(int i, int j)
             else
             {}
             k++;
+        }
     }
 }
 /*--------------------------------------------- Module de test derrière pour tester l'ECHEC au roi ---------------------------------------------*/
@@ -3467,11 +3508,12 @@ int testDiagoBDPat(int i, int j, char echiquierDeTest[8][8])
 void jeRoque()
 {
     char choix[20] = "coucou";
+    
     if(joueurActif == 1)
     {
         if(roqueJ1 < 2 && t[7][1] == ' ' && t[7][2] == ' ' && t[7][3] == ' ' 
         && t[7][5] == ' ' && t[7][6] == ' ' 
-        && t[7][0] == 'T' && t[7][8] == 'T' && t[7][4] == 'K')
+        && t[7][0] == 'T' && t[7][7] == 'T' && t[7][4] == 'K')
         {
             printf("---------------------------------\n");
             printf("--  1- Faire un grand roque    --\n");
@@ -3483,6 +3525,7 @@ void jeRoque()
             {
                 printf("Choix : ");
                 scanf("%s", choix);
+                videBuffer();
                 
                 switch(choix[0])
                 {
@@ -3529,6 +3572,7 @@ void jeRoque()
             {
                 printf("Choix : ");
                 scanf("%s", choix);
+                videBuffer();
                 
                 switch(choix[0])
                 {
@@ -3555,7 +3599,7 @@ void jeRoque()
         }
         
         else if (roqueJ1 < 2 && t[7][5] == ' ' && t[7][6] == ' ' 
-        && t[7][8] == 'T' && t[7][4] == 'K')
+        && t[7][7] == 'T' && t[7][4] == 'K')
         {
             printf("---------------------------------\n");
             printf("--  1- Faire un petit roque    --\n");
@@ -3566,6 +3610,7 @@ void jeRoque()
             {
                 printf("Choix : ");
                 scanf("%s", choix);
+                videBuffer();
                 
                 switch(choix[0])
                 {
@@ -3614,6 +3659,7 @@ void jeRoque()
             {
                 printf("Choix : ");
                 scanf("%s", choix);
+                videBuffer();
                 
                 switch(choix[0])
                 {
@@ -3660,6 +3706,7 @@ void jeRoque()
             {
                 printf("Choix : ");
                 scanf("%s", choix);
+                videBuffer();
                 
                 switch(choix[0])
                 {
@@ -3697,6 +3744,7 @@ void jeRoque()
             {
                 printf("Choix : ");
                 scanf("%s", choix);
+                videBuffer();
                 
                 switch(choix[0])
                 {
@@ -3740,6 +3788,8 @@ void sauvegarde()
     
     printf("Nom du fichier de sauvegarde : ");
     scanf("%s",nomFichier);
+    videBuffer();
+    
     f1 = fopen(nomFichier,"w");
 
     fprintf(f1,"%d%d%d", joueurActif, roqueJ1, roqueJ2); //pour le joueurActif
